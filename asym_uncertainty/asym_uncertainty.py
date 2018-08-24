@@ -22,6 +22,9 @@ from mc_statistics import cdf, randn_asym, shortest_coverage
 class Unc:
     """Class for a quantity with asymmetric uncertainty"""
 
+    # Count the number of instances of Unc
+    n_instances = 0
+
     def __init__(self, mean_value, sigma_low, sigma_up):
         try:
             self.mean_value = mean_value
@@ -37,6 +40,10 @@ class Unc:
         except ValueError:
             print("ValueError")
             raise
+
+        # Set unique random number seed as the number of instances of Unc
+        self.seed = Unc.n_instances
+        Unc.n_instances += 1
 
     def set_mean_value(self, mean_value):
         """Set the value of mean_value
@@ -145,17 +152,22 @@ upper limit of shortest coverage interval - <m>]
         if isinstance(other, (int, float)):
             return Unc(self.mean_value/other, self.sigma_low/other, self.sigma_up/other)
 
+        if self.seed == other.seed:
+            return Unc(1., 0., 0.)
+
         if other.is_exact:
             return (Unc(self.mean_value/other.mean_value, self.sigma_low/other.mean_value,
                         self.sigma_up/other.mean_value))
 
-        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up)
+        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up,
+                                random_seed=other.seed)
 
         if self.is_exact:
             rand_result = self.mean_value/rand_other
 
         else:
-            rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up)
+            rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
+                                   random_seed=self.seed)
             rand_result = rand_self/rand_other
 
         return self.eval(rand_result, force_inside_shortest_coverage=True)
@@ -208,11 +220,16 @@ upper limit of shortest coverage interval - <m>]
         if isinstance(other, (int, float)):
             return Unc(self.mean_value + other, self.sigma_low, self.sigma_up)
 
+        if self.seed == other.seed:
+            return 2.*Unc(self.mean_value, self.sigma_low, self.sigma_up)
+
         if other.is_exact:
             return Unc(self.mean_value + other.mean_value, self.sigma_low, self.sigma_up)
 
-        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up)
-        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up)
+        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
+                               random_seed=self.seed)
+        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up,
+                                random_seed=other.seed)
 
         rand_result = rand_self + rand_other
 
@@ -266,11 +283,16 @@ upper limit of shortest coverage interval - <m>]
         if isinstance(other, (int, float)):
             return Unc(self.mean_value - other, self.sigma_low, self.sigma_up)
 
+        if self.seed == other.seed:
+            return Unc(0., 0., 0.)
+
         if other.is_exact:
             return Unc(self.mean_value - other.mean_value, self.sigma_low, self.sigma_up)
 
-        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up)
-        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up)
+        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
+                               random_seed=self.seed)
+        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up,
+                                random_seed=other.seed)
 
         rand_result = rand_self - rand_other
 
@@ -328,8 +350,10 @@ upper limit of shortest coverage interval - <m>]
             return (Unc(self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
                         self.sigma_up*other.mean_value))
 
-        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up)
-        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up)
+        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
+                               random_seed=self.seed)
+        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up,
+                                random_seed=other.seed)
 
         rand_result = rand_self*rand_other
 
@@ -374,7 +398,8 @@ upper limit of shortest coverage interval - <m>]
         if self.is_exact:
             return Unc(self.mean_value**exponent, 0., 0.)
 
-        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up)
+        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
+                               random_seed=self.seed)
 
         rand_result = rand_self**exponent
 

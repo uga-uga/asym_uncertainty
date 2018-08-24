@@ -18,7 +18,7 @@ from numpy import concatenate, ones
 
 from asym_uncertainty import Unc
 
-STATISTICAL_UNCERTAINTY_LIMIT = 0.2 # Maximum tolerated relative deviation from exact result
+STATISTICAL_UNCERTAINTY_LIMIT = 0.25 # Maximum tolerated relative deviation from exact result
 SQRT2 = 1.4142135623730951
 MULTIPLICATION_SIGMA = 0.68327
 RATIO_SIGMA = 1.8374
@@ -246,3 +246,33 @@ def test_Unc_exact_algebra():
     assert ratio.mean_value == 1.
     assert ratio.sigma_low== 1.
     assert ratio.sigma_low == 1.
+
+def test_Unc_correlated_algebra():
+    # Test the algebra with correlated quantities, i.e. calculations like
+    # a*a, a+a, a-a ...
+    # where the probability distributions for the operands can not be assumed
+    # to be independent
+
+    a = Unc(1., 1., 1.)
+
+    add = a+a
+    assert add.mean_value == 2.
+    assert add.sigma_low == 2.
+    assert add.sigma_up == 2.
+
+    sub = a-a
+    assert sub.mean_value == 0.
+    assert sub.sigma_low == 0.
+    assert sub.sigma_up == 0.
+
+    ratio = a/a 
+    assert ratio.mean_value == 1.
+    assert ratio.sigma_low == 0.
+    assert ratio.sigma_up == 0.
+
+    mult = a*a
+    power = a**2
+
+    assert mult.mean_value == power.mean_value
+    assert mult.sigma_low == power.sigma_low
+    assert mult.sigma_up == power.sigma_up
