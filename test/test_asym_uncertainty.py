@@ -70,6 +70,12 @@ def test_Unc_input_output():
     with pytest.raises(ValueError):
         c = a/b
 
+    # Unary '-' operator
+    a = Unc(1., 0., 0.)
+    b = -a
+
+    assert b.mean_value == -1.
+
 def test_Unc_MC_algebra():
     """For symmetric uncertainties, analytic expressions exist for the mean value and standard \
     deviation of a sum/difference/product/ratio of two random variables.

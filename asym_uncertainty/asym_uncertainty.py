@@ -126,6 +126,21 @@ upper limit of shortest coverage interval - <m>]
         most_probable = bins[argmax(hist)]
 
         return Unc(most_probable, most_probable - s_cov[0], s_cov[1] - most_probable)
+    
+    def __neg__(self):
+        """Switch the sign of Unc using the unary '-' operator
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Unc(-self.mean_value, self.sigma_low, self.sigma_up)
+
+        """
+
+        return Unc(-self.mean_value, self.sigma_low, self.sigma_up)
 
     def __truediv__(self, other):
         """Calculate self/other
