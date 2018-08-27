@@ -10,7 +10,7 @@ setup(
         license='GPLv3',
         python_requires='>=3',
         packages=['asym_uncertainty'],
-        install_requires=['numpy', 'scipy', 'mc_statistics>=0.2'],
+        install_requires=['numpy', 'mc_statistics>=0.3'],
         setup_requires=['pytest-runner'],
         tests_require=['pytest', 'pytest-cov', 'numpy'],
 )

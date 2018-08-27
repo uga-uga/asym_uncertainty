@@ -16,8 +16,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with asym_uncertainty.  If not, see <http://www.gnu.org/licenses/>.
 
+from math import inf
+
 from numpy import argmax, extract, histogram
-from mc_statistics import cdf, randn_asym, shortest_coverage
+from mc_statistics import cdf, check_num_array_argument, randn_asym, shortest_coverage
 
 class Unc:
     """Class for a quantity with asymmetric uncertainty"""
@@ -25,7 +27,7 @@ class Unc:
     # Count the number of instances of Unc
     n_instances = 0
 
-    def __init__(self, mean_value, sigma_low, sigma_up):
+    def __init__(self, mean_value, sigma_low, sigma_up, limits=None):
         try:
             self.mean_value = mean_value
 
@@ -36,6 +38,12 @@ class Unc:
             self.sigma_low = sigma_low
             self.sigma_up = sigma_up
             self.is_exact = bool(sigma_low == 0. and sigma_up == 0.)
+
+            if limits is None:
+                self.limits = [-inf, inf]
+            else:
+                self.limits = limits
+            check_num_array_argument(self.limits, 2, argument_name="Limits", is_increasing=True)
 
         except ValueError:
             print("ValueError")
@@ -93,6 +101,56 @@ class Unc:
             print("ValueError")
             raise
 
+    def set_lower_limit(self, lower_limit):
+        """ Set the value of the lower limit and check whether the new value\
+        is valid, i.e. self.set_lower_limit(x) is safer than
+        self.lower_limit = x
+
+        Parameters
+        ----------
+        lower_limit : int, float
+            New value for the lower limit
+        """
+
+        check_num_array_argument([lower_limit, self.limits[1]], 2, argument_name="Limits",
+                                 is_increasing=True)
+
+        self.limits[0] = lower_limit
+
+    def set_upper_limit(self, upper_limit):
+        """ Set the value of the upper limit and check whether the new value\
+        is valid, i.e. self.set_upper_limit(x) is safer than
+        self.upper_limit = x
+
+        Parameters
+        ----------
+        upper_limit : int, float
+            New value for the upper limit
+        """
+
+        check_num_array_argument([self.limits[0], upper_limit], 2, argument_name="Limits",
+                                 is_increasing=True)
+
+        self.limits[1] = upper_limit
+
+    def set_limits(self, limits):
+        """ Set the value of the lower and upper limits and check whether the new values\
+        are valid, i.e. self.set_limits(x, y) is safer than
+        self.lower_limit = x and self.upper_limit = y
+
+        Parameters
+        ----------
+        lower_limit : int, float
+            New value for the lower limit
+        upper_limit : int, float
+            New value for the upper limit
+        """
+
+        check_num_array_argument(limits, 2, argument_name="Limits",
+                                 is_increasing=True)
+
+        self.limits = limits
+
     def __repr__(self):
         return str(self.mean_value) + " - " + str(self.sigma_low) + " + " + str(self.sigma_up)
 
@@ -126,7 +184,7 @@ upper limit of shortest coverage interval - <m>]
         most_probable = bins[argmax(hist)]
 
         return Unc(most_probable, most_probable - s_cov[0], s_cov[1] - most_probable)
-    
+
     def __neg__(self):
         """Switch the sign of Unc using the unary '-' operator
 
@@ -174,15 +232,15 @@ upper limit of shortest coverage interval - <m>]
             return (Unc(self.mean_value/other.mean_value, self.sigma_low/other.mean_value,
                         self.sigma_up/other.mean_value))
 
-        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up,
-                                random_seed=other.seed)
+        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                                limits=self.limits, random_seed=other.seed)
 
         if self.is_exact:
             rand_result = self.mean_value/rand_other
 
         else:
-            rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
-                                   random_seed=self.seed)
+            rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                                   limits=self.limits, random_seed=self.seed)
             rand_result = rand_self/rand_other
 
         return self.eval(rand_result, force_inside_shortest_coverage=True)
@@ -241,10 +299,10 @@ upper limit of shortest coverage interval - <m>]
         if other.is_exact:
             return Unc(self.mean_value + other.mean_value, self.sigma_low, self.sigma_up)
 
-        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
-                               random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up,
-                                random_seed=other.seed)
+        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                               limits=self.limits, random_seed=self.seed)
+        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                                limits=self.limits, random_seed=other.seed)
 
         rand_result = rand_self + rand_other
 
@@ -304,10 +362,10 @@ upper limit of shortest coverage interval - <m>]
         if other.is_exact:
             return Unc(self.mean_value - other.mean_value, self.sigma_low, self.sigma_up)
 
-        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
-                               random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up,
-                                random_seed=other.seed)
+        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                               limits=self.limits, random_seed=self.seed)
+        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                                limits=self.limits, random_seed=other.seed)
 
         rand_result = rand_self - rand_other
 
@@ -365,10 +423,10 @@ upper limit of shortest coverage interval - <m>]
             return (Unc(self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
                         self.sigma_up*other.mean_value))
 
-        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
-                               random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, other.sigma_low, other.sigma_up,
-                                random_seed=other.seed)
+        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                               limits=self.limits, random_seed=self.seed)
+        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                                limits=self.limits, random_seed=other.seed)
 
         rand_result = rand_self*rand_other
 
@@ -413,8 +471,8 @@ upper limit of shortest coverage interval - <m>]
         if self.is_exact:
             return Unc(self.mean_value**exponent, 0., 0.)
 
-        rand_self = randn_asym(self.mean_value, self.sigma_low, self.sigma_up,
-                               random_seed=self.seed)
+        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                               limits=self.limits, random_seed=self.seed)
 
         rand_result = rand_self**exponent
 

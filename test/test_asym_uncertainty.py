@@ -13,6 +13,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with asym_uncertainty.  If not, see <http://www.gnu.org/licenses/>.
 
+from math import inf
+
 import pytest
 from numpy import concatenate, ones
 
@@ -75,6 +77,27 @@ def test_Unc_input_output():
     b = -a
 
     assert b.mean_value == -1.
+
+    with pytest.raises(ValueError):
+        a = Unc(1., 1., 1., limits=[1., 0.])
+    with pytest.raises(ValueError):
+        a = Unc(1., 1., 1., limits=[1., 0., 2.])
+    a = Unc(1., 1., 1., limits=[0., 1.])
+    with pytest.raises(ValueError):
+        a.set_lower_limit(2.)
+    with pytest.raises(ValueError):
+        a.set_upper_limit(-1.)
+    with pytest.raises(ValueError):
+        a.set_limits([1., 0.])
+
+    a.set_lower_limit(0.)
+    a.set_upper_limit(1.)
+    assert a.limits[0] == 0.
+    assert a.limits[1] == 1.
+    a.set_limits([3., 4.])
+    assert a.limits[0] == 3.
+    assert a.limits[1] == 4.
+
 
 def test_Unc_MC_algebra():
     """For symmetric uncertainties, analytic expressions exist for the mean value and standard \
