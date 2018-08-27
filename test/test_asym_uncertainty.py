@@ -17,8 +17,9 @@ from math import inf
 
 import pytest
 from numpy import concatenate, ones
+from numpy import exp as nexp
 
-from asym_uncertainty import Unc
+from asym_uncertainty import exp, Unc
 
 STATISTICAL_UNCERTAINTY_LIMIT = 0.25 # Maximum tolerated relative deviation from exact result
 SQRT2 = 1.4142135623730951
@@ -71,6 +72,8 @@ def test_Unc_input_output():
         c = b/a
     with pytest.raises(ValueError):
         c = a/b
+    with pytest.raises(ValueError):
+        c = exp(a)
 
     # Unary '-' operator
     a = Unc(1., 0., 0.)
@@ -305,3 +308,23 @@ def test_Unc_correlated_algebra():
     assert mult.mean_value == power.mean_value
     assert mult.sigma_low == power.sigma_low
     assert mult.sigma_up == power.sigma_up
+
+def test_Unc_functions():
+    # Test exp by showing that exp(Unc(1., sigma, sigma)) gets closer to 
+    # e if sigma is reduced
+
+    a = Unc(1., 1., 1.)
+    c = exp(a)
+    assert c.mean_value < 1.
+
+    a = Unc(1., 0.5, 0.5)
+    c = exp(a)
+    assert c.mean_value < 2.1
+
+    a = Unc(1., 0.05, 0.05)
+    c = exp(a)
+    assert c.mean_value >= 2.7 and c.mean_value <= 2.8
+
+    a = Unc(1., 0., 0.)
+    c = exp(a)
+    assert c.mean_value == nexp(1.)
