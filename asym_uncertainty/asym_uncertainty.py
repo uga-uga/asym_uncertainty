@@ -18,7 +18,9 @@
 
 from math import inf
 
-from numpy import argmax, extract, histogram
+from numpy import absolute, argmax, array, extract, floor, histogram, log10, sort
+from numpy import round as nround
+from numpy import minimum as nminimum
 from mc_statistics import cdf, check_num_array_argument, randn_asym, shortest_coverage
 
 class Unc:
@@ -49,6 +51,10 @@ class Unc:
             print("ValueError")
             raise
 
+        # Initialize rounded values
+        self.rounded = [self.mean_value, self.sigma_low, self.sigma_up]
+        self.round_digits()
+
         # Set unique random number seed as the number of instances of Unc
         self.seed = Unc.n_instances
         Unc.n_instances += 1
@@ -61,7 +67,9 @@ class Unc:
         mean_value : float
             New value for mean_value
         """
+
         self.mean_value = mean_value
+        self.round_digits()
 
     def set_sigma_low(self, sigma_low):
         """Set the value of sigma_low and check whether the new value is valid, \
@@ -78,6 +86,7 @@ class Unc:
 
             self.sigma_low = sigma_low
             self.is_exact = bool(self.sigma_low == 0. and self.sigma_up == 0.)
+            self.round_digits()
         except ValueError:
             print("ValueError")
             raise
@@ -97,6 +106,7 @@ class Unc:
 
             self.sigma_up = sigma_up
             self.is_exact = bool(self.sigma_low == 0. and self.sigma_up == 0.)
+            self.round_digits()
         except ValueError:
             print("ValueError")
             raise
@@ -151,8 +161,45 @@ class Unc:
 
         self.limits = limits
 
+    def round_digits(self):
+        """ Round mean value and uncertainty limits to a sensible number
+        of digits for displaying them
+
+        The decision of how many digits to keep is made after recommendations
+        by the Particle Data Group (PDG)
+        """
+        arr = array([self.mean_value, self.sigma_low, self.sigma_up])
+
+        # Safety measure: if the absolute mean value is much smaller than the uncertainty,
+        # simply set it to zero
+        if arr.all() > 0. and absolute(arr[0])/nminimum(arr[1], arr[2]) < 10**-1:
+            arr[0] = 0.
+
+        # If both the mean value and both uncertainties are zero, treat it as  a special case.
+        # In all other cases, the smallest nonzero value of [mean_value, sigma_low, sigma_up]
+        # determines the digits of the rounded values.
+        arr_sort = sort(arr)
+        nonzero = extract(arr_sort > 0., arr_sort)
+        if len(nonzero) is not 0:
+            first_digit = floor(log10(absolute(nonzero[0])))
+            # Make a decision on the number of displayed digits based on a recommendation
+            # by the PDG
+            first_three_digits = nround(nonzero[0]*10**(-first_digit+2))
+
+            if 100 <= first_three_digits <= 354:
+                round_digits = 1
+            elif 355 <= first_three_digits <= 949:
+                round_digits = 0
+            else:
+                round_digits = 1
+
+            arr_round = (nround(arr*10**(-first_digit+round_digits))/
+                         10**(-first_digit+round_digits))
+
+            self.rounded = arr_round
+
     def __repr__(self):
-        return str(self.mean_value) + " - " + str(self.sigma_low) + " + " + str(self.sigma_up)
+        return str(self.rounded[0]) + " - " + str(self.rounded[1]) + " + " + str(self.rounded[2])
 
     @classmethod
     def eval(cls, rand_result, force_inside_shortest_coverage=True):
