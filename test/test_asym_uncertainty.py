@@ -97,9 +97,14 @@ def test_Unc_input_output():
     a.set_upper_limit(1.)
     assert a.limits[0] == 0.
     assert a.limits[1] == 1.
-    a.set_limits([3., 4.])
-    assert a.limits[0] == 3.
-    assert a.limits[1] == 4.
+    # Try setting new limits which are outside the old ones. This should cause a
+    # RuntimeWarning
+    with pytest.raises(RuntimeWarning):
+        a.set_limits([3., 4.])
+
+    a.set_limits([0.1, 0.9])
+    assert a.limits[0] == 0.1
+    assert a.limits[1] == 0.9
 
 
 def test_Unc_MC_algebra():
@@ -315,7 +320,7 @@ def test_Unc_functions():
 
     a = Unc(1., 1., 1.)
     c = exp(a)
-    assert c.mean_value < 1.
+    assert c.mean_value < 1.2
 
     a = Unc(1., 0.5, 0.5)
     c = exp(a)
@@ -387,3 +392,16 @@ def test_round():
 
     # Check string representation
     assert a.__repr__() == "0.05 - 0.12 + 0.32"
+
+def test_limits():
+    # Check that the numerical values of mean_value, sigma_low and sigma_up are reset
+    # when the limits are changed
+
+    a = Unc(0., 1., 1., limits=[-inf, inf])
+    a.set_limits([-1., 1.])
+
+    # A normal distribution restricted to the range [-1, 1] should have its 68.27 % coverage
+    # interval between ~[-0.622, 0.622]
+    assert -0.1 <= a.mean_value <= 0.1
+    assert 0.59 <= a.sigma_low <= 0.66
+    assert 0.59 <= a.sigma_up <= 0.66

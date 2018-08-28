@@ -124,8 +124,10 @@ class Unc:
 
         check_num_array_argument([lower_limit, self.limits[1]], 2, argument_name="Limits",
                                  is_increasing=True)
+        self.check_limit_update([lower_limit, self.limits[1]])
 
         self.limits[0] = lower_limit
+        self.update_limits()
 
     def set_upper_limit(self, upper_limit):
         """ Set the value of the upper limit and check whether the new value\
@@ -140,8 +142,10 @@ class Unc:
 
         check_num_array_argument([self.limits[0], upper_limit], 2, argument_name="Limits",
                                  is_increasing=True)
+        self.check_limit_update([self.limits[0], upper_limit])
 
         self.limits[1] = upper_limit
+        self.update_limits()
 
     def set_limits(self, limits):
         """ Set the value of the lower and upper limits and check whether the new values\
@@ -150,16 +154,57 @@ class Unc:
 
         Parameters
         ----------
-        lower_limit : int, float
-            New value for the lower limit
-        upper_limit : int, float
-            New value for the upper limit
+        limits : [float, float]
+            New values for the limits
         """
 
         check_num_array_argument(limits, 2, argument_name="Limits",
                                  is_increasing=True)
+        self.check_limit_update(limits)
 
         self.limits = limits
+        self.update_limits()
+
+    def check_limit_update(self, new_limits):
+        """ Check whether the new limits make sense, considering the old ones.
+        For example, assume that the previous limits were [-1, 1] for a number
+        Unc(0., 1., 1.) and the new ones are [10, 11].
+        In order to sample points within the new limits, highly improbable values
+        of the probability distribution would have to be sampled, leading to numerical
+        instabilities.
+        Going through the example:
+        The value of the CDF of the normal distribution with mean = 0 and sigma == 1
+        at x == 6 is already 0.9999999990134123, at x == 10, scipy.stats.norm.cdf simply
+        displays 1.0.
+        Consequently, using scipy.stats.norm.ppf(1.0) would yield infinity.
+
+        Parameters
+        ----------
+        new_limits : [float, float]
+            New values for the limits
+        """
+
+        try:
+            if new_limits[0] >= self.limits[1] or new_limits[1] <= self.limits[0]:
+                raise RuntimeWarning("New limits are outside of old limits,\
+                                     this may cause numerical unstabilities")
+        except RuntimeWarning:
+            print("RuntimeWarning")
+            raise
+
+    def update_limits(self):
+        """ If the limits for the distribution of Unc are changed, adapt mean_value,
+        sigma_low and sigma_up accordingly using the same Monte-Carlo method that is
+        used for all calculations
+        """
+
+        rand = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                          limits=self.limits, random_seed=self.seed)
+        eval_result = self.eval(rand, force_inside_shortest_coverage=True)
+
+        self.set_mean_value(eval_result.mean_value)
+        self.set_sigma_low(eval_result.sigma_low)
+        self.set_sigma_up(eval_result.sigma_up)
 
     def round_digits(self):
         """ Round mean value and uncertainty limits to a sensible number
