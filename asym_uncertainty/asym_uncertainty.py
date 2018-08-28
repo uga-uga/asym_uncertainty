@@ -246,6 +246,9 @@ class Unc:
     def __repr__(self):
         return str(self.rounded[0]) + " - " + str(self.rounded[1]) + " + " + str(self.rounded[2])
 
+    def __str__(self):
+        return str(self.rounded[0]) + "_{" + str(self.rounded[1]) + "}^{" + str(self.rounded[2]) + "}"
+
     @classmethod
     def eval(cls, rand_result, force_inside_shortest_coverage=True):
         """Evaluate the most probable value (or the mean value) and the shortest coverage interval \

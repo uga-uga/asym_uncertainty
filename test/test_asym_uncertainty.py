@@ -46,6 +46,7 @@ def test_Unc_input_output():
     assert b.is_exact
 
     assert b.__repr__() == "1.0 - 0.0 + 0.0"
+    assert b.__str__() == "1.0_{0.0}^{0.0}"
 
     b.set_mean_value(-1.)
     assert b.mean_value == -1.
