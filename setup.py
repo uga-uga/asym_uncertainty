@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
         name='asym_uncertainty',
-        version='0.2.0',
+        version='0.3.0',
         description='Algebra for quantities with asymmetric uncertainties using a Monte-Carlo uncertainty propagation method.',
         url='http://github.com/uga-uga/asym_uncertainty',
         author='Udo Gayer',

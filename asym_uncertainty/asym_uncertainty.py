@@ -18,10 +18,11 @@
 
 from math import inf
 
-from numpy import absolute, argmax, array, extract, floor, histogram, log10, sort
-from numpy import round as nround
-from numpy import minimum as nminimum
-from mc_statistics import cdf, check_num_array_argument, randn_asym, shortest_coverage
+from mc_statistics import check_num_array_argument, randn_asym
+
+from .evaluation import evaluate
+from .io import check_limit_update, round_digits, set_limits, set_lower_limit, set_mean_value
+from .io import set_sigma_low, set_sigma_up, set_upper_limit, update_limits
 
 class Unc:
     """Class for a quantity with asymmetric uncertainty"""
@@ -68,8 +69,7 @@ class Unc:
             New value for mean_value
         """
 
-        self.mean_value = mean_value
-        self.round_digits()
+        set_mean_value(self, mean_value)
 
     def set_sigma_low(self, sigma_low):
         """Set the value of sigma_low and check whether the new value is valid, \
@@ -80,16 +80,8 @@ class Unc:
         sigma_low : float
             New value for sigma_low
         """
-        try:
-            if sigma_low < 0.:
-                raise ValueError("sigma_low must be >= 0.")
 
-            self.sigma_low = sigma_low
-            self.is_exact = bool(self.sigma_low == 0. and self.sigma_up == 0.)
-            self.round_digits()
-        except ValueError:
-            print("ValueError")
-            raise
+        set_sigma_low(self, sigma_low=sigma_low)
 
     def set_sigma_up(self, sigma_up):
         """Set the value of sigma_up and check whether the new value is valid, \
@@ -100,16 +92,8 @@ class Unc:
         sigma_up : float
             New value for sigma_up
         """
-        try:
-            if sigma_up < 0.:
-                raise ValueError("sigma_up must be >= 0.")
 
-            self.sigma_up = sigma_up
-            self.is_exact = bool(self.sigma_low == 0. and self.sigma_up == 0.)
-            self.round_digits()
-        except ValueError:
-            print("ValueError")
-            raise
+        set_sigma_up(self, sigma_up=sigma_up)
 
     def set_lower_limit(self, lower_limit):
         """ Set the value of the lower limit and check whether the new value\
@@ -122,12 +106,7 @@ class Unc:
             New value for the lower limit
         """
 
-        check_num_array_argument([lower_limit, self.limits[1]], 2, argument_name="Limits",
-                                 is_increasing=True)
-        self.check_limit_update([lower_limit, self.limits[1]])
-
-        self.limits[0] = lower_limit
-        self.update_limits()
+        set_lower_limit(self, lower_limit=lower_limit)
 
     def set_upper_limit(self, upper_limit):
         """ Set the value of the upper limit and check whether the new value\
@@ -140,12 +119,7 @@ class Unc:
             New value for the upper limit
         """
 
-        check_num_array_argument([self.limits[0], upper_limit], 2, argument_name="Limits",
-                                 is_increasing=True)
-        self.check_limit_update([self.limits[0], upper_limit])
-
-        self.limits[1] = upper_limit
-        self.update_limits()
+        set_upper_limit(self, upper_limit=upper_limit)
 
     def set_limits(self, limits):
         """ Set the value of the lower and upper limits and check whether the new values\
@@ -158,12 +132,7 @@ class Unc:
             New values for the limits
         """
 
-        check_num_array_argument(limits, 2, argument_name="Limits",
-                                 is_increasing=True)
-        self.check_limit_update(limits)
-
-        self.limits = limits
-        self.update_limits()
+        set_limits(self, limits=limits)
 
     def check_limit_update(self, new_limits):
         """ Check whether the new limits make sense, considering the old ones.
@@ -184,27 +153,7 @@ class Unc:
             New values for the limits
         """
 
-        try:
-            if new_limits[0] >= self.limits[1] or new_limits[1] <= self.limits[0]:
-                raise RuntimeWarning("New limits are outside of old limits,\
-                                     this may cause numerical unstabilities")
-        except RuntimeWarning:
-            print("RuntimeWarning")
-            raise
-
-    def update_limits(self):
-        """ If the limits for the distribution of Unc are changed, adapt mean_value,
-        sigma_low and sigma_up accordingly using the same Monte-Carlo method that is
-        used for all calculations
-        """
-
-        rand = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                          limits=self.limits, random_seed=self.seed)
-        eval_result = self.eval(rand, force_inside_shortest_coverage=True)
-
-        self.set_mean_value(eval_result.mean_value)
-        self.set_sigma_low(eval_result.sigma_low)
-        self.set_sigma_up(eval_result.sigma_up)
+        check_limit_update(self, new_limits=new_limits)
 
     def round_digits(self):
         """ Round mean value and uncertainty limits to a sensible number
@@ -213,41 +162,23 @@ class Unc:
         The decision of how many digits to keep is made after recommendations
         by the Particle Data Group (PDG)
         """
-        arr = array([self.mean_value, self.sigma_low, self.sigma_up])
 
-        # Safety measure: if the absolute mean value is much smaller than the uncertainty,
-        # simply set it to zero
-        if arr.all() > 0. and absolute(arr[0])/nminimum(arr[1], arr[2]) < 10**-1:
-            arr[0] = 0.
+        round_digits(self)
 
-        # If both the mean value and both uncertainties are zero, treat it as  a special case.
-        # In all other cases, the smallest nonzero value of [mean_value, sigma_low, sigma_up]
-        # determines the digits of the rounded values.
-        arr_sort = sort(arr)
-        nonzero = extract(arr_sort > 0., arr_sort)
-        if len(nonzero) is not 0:
-            first_digit = floor(log10(absolute(nonzero[0])))
-            # Make a decision on the number of displayed digits based on a recommendation
-            # by the PDG
-            first_three_digits = nround(nonzero[0]*10**(-first_digit+2))
+    def update_limits(self):
+        """ If the limits for the distribution of Unc are changed, adapt mean_value,
+        sigma_low and sigma_up accordingly using the same Monte-Carlo method that is
+        used for all calculations
+        """
 
-            if 100 <= first_three_digits <= 354:
-                round_digits = 1
-            elif 355 <= first_three_digits <= 949:
-                round_digits = 0
-            else:
-                round_digits = 1
-
-            arr_round = (nround(arr*10**(-first_digit+round_digits))/
-                         10**(-first_digit+round_digits))
-
-            self.rounded = arr_round
+        update_limits(self)
 
     def __repr__(self):
         return str(self.rounded[0]) + " - " + str(self.rounded[1]) + " + " + str(self.rounded[2])
 
     def __str__(self):
-        return str(self.rounded[0]) + "_{" + str(self.rounded[1]) + "}^{" + str(self.rounded[2]) + "}"
+        return (str(self.rounded[0]) + "_{" + str(self.rounded[1]) + "}^{" +
+                str(self.rounded[2]) + "}")
 
     @classmethod
     def eval(cls, rand_result, force_inside_shortest_coverage=True):
@@ -263,22 +194,13 @@ of randomly sampled values.
 
         Return
         ------
-        result : [float, float, float]
-            [most probable, <m> - lower limit of shortest coverage interval, \
-upper limit of shortest coverage interval - <m>]
+        result : Unc
         """
 
-        s_cov = shortest_coverage(cdf(rand_result))
-        if force_inside_shortest_coverage:
-            hist, bins = histogram(
-                extract((rand_result >= s_cov[0])*(rand_result <= s_cov[1]), rand_result),
-                bins="sqrt")
-        else:
-            hist, bins = histogram(rand_result, bins="sqrt")
+        eval_result = evaluate(rand_result=rand_result,
+                               force_inside_shortest_coverage=force_inside_shortest_coverage)
 
-        most_probable = bins[argmax(hist)]
-
-        return Unc(most_probable, most_probable - s_cov[0], s_cov[1] - most_probable)
+        return Unc(eval_result[0], eval_result[1], eval_result[2])
 
     def __neg__(self):
         """Switch the sign of Unc using the unary '-' operator
