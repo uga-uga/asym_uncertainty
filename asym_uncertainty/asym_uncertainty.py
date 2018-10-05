@@ -20,9 +20,10 @@ from math import inf
 
 from mc_statistics import check_num_array_argument, randn_asym
 
+from .algebra import truediv
 from .evaluation import evaluate
-from .io import check_limit_update, round_digits, set_limits, set_lower_limit, set_mean_value
-from .io import set_sigma_low, set_sigma_up, set_upper_limit, update_limits
+from .io import check_limit_update, check_numeric, round_digits, set_limits, set_lower_limit
+from .io import set_mean_value, set_sigma_low, set_sigma_up, set_upper_limit, update_limits
 
 class Unc:
     """Class for a quantity with asymmetric uncertainty"""
@@ -59,6 +60,10 @@ class Unc:
         # Set unique random number seed as the number of instances of Unc
         self.seed = Unc.n_instances
         Unc.n_instances += 1
+
+    ###################################################
+    # Input / Output
+    ###################################################
 
     def set_mean_value(self, mean_value):
         """Set the value of mean_value
@@ -156,9 +161,8 @@ class Unc:
         check_limit_update(self, new_limits=new_limits)
 
     def round_digits(self):
-        """ Round mean value and uncertainty limits to a sensible number
-        of digits for displaying them
-
+        """ Round mean value and uncertainty limits to a sensible number of digits
+        for displaying them
         The decision of how many digits to keep is made after recommendations
         by the Particle Data Group (PDG)
         """
@@ -179,6 +183,10 @@ class Unc:
     def __str__(self):
         return (str(self.rounded[0]) + "_{" + str(self.rounded[1]) + "}^{" +
                 str(self.rounded[2]) + "}")
+
+    ###################################################
+    # Evaluation of results
+    ###################################################
 
     @classmethod
     def eval(cls, rand_result, force_inside_shortest_coverage=True):
@@ -201,6 +209,27 @@ of randomly sampled values.
                                force_inside_shortest_coverage=force_inside_shortest_coverage)
 
         return Unc(eval_result[0], eval_result[1], eval_result[2])
+
+    @classmethod
+    def is_unc(cls, other):
+        """Determine whether a given object is an instance of the class Unc
+
+        Parameters
+        ----------
+        other : anything
+
+        Return
+        ------
+        result : bool
+            True, if other is of type Unc
+            False, else
+        """
+
+        return isinstance(other, Unc)
+
+    ###################################################
+    # Algebra
+    ###################################################
 
     def __neg__(self):
         """Switch the sign of Unc using the unary '-' operator
@@ -230,37 +259,9 @@ of randomly sampled values.
         self/other : Unc
         """
 
-        try:
-            if not isinstance(other, (int, float, Unc)):
-                raise ValueError("Right-hand operand must be either a built-in\
-                                 numerical type or Unc")
+        truediv_result = truediv(self, other)
 
-        except ValueError:
-            print("ValueError")
-            raise
-
-        if isinstance(other, (int, float)):
-            return Unc(self.mean_value/other, self.sigma_low/other, self.sigma_up/other)
-
-        if self.seed == other.seed:
-            return Unc(1., 0., 0.)
-
-        if other.is_exact:
-            return (Unc(self.mean_value/other.mean_value, self.sigma_low/other.mean_value,
-                        self.sigma_up/other.mean_value))
-
-        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                limits=self.limits, random_seed=other.seed)
-
-        if self.is_exact:
-            rand_result = self.mean_value/rand_other
-
-        else:
-            rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                                   limits=self.limits, random_seed=self.seed)
-            rand_result = rand_self/rand_other
-
-        return self.eval(rand_result, force_inside_shortest_coverage=True)
+        return Unc(truediv_result[0], truediv_result[1], truediv_result[2])
 
     def __rtruediv__(self, other):
         """Calculate other/self
@@ -275,15 +276,20 @@ of randomly sampled values.
         other/self : Unc
         """
 
-        try:
-            if isinstance(other, (int, float)):
-                return Unc(other, 0., 0.)/Unc(self.mean_value, self.sigma_low, self.sigma_up)
+        check_numeric(self, other)
 
-            raise ValueError("Left-hand operand must be either a built-in numerical type or Unc")
+        rtruediv_result = truediv(Unc(other, 0., 0.), self)
 
-        except ValueError:
-            print("ValueError")
-            raise
+        return Unc(rtruediv_result[0], rtruediv_result[1], rtruediv_result[2])
+#        try:
+#            if isinstance(other, (int, float)):
+#                return Unc(other, 0., 0.)/Unc(self.mean_value, self.sigma_low, self.sigma_up)
+#
+#            raise ValueError("Left-hand operand must be either a built-in numerical type or Unc")
+#
+#        except ValueError:
+#            print("ValueError")
+#            raise
 
     def __add__(self, other):
         """Calculate self + other

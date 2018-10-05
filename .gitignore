@@ -2,8 +2,10 @@
 asym_uncertainty.egg-info
 .eggs
 .pytest_cache
+*.swp
 
+asym_uncertainty/__pycache__
 build
 dist
-asym_uncertainty/__pycache__
+htmlcov
 test/__pycache__

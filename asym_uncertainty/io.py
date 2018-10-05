@@ -32,6 +32,20 @@ def check_limit_update(self, new_limits):
         print("RuntimeWarning")
         raise
 
+def check_numeric(self, other):
+    """Implementation of Unc.check_numeric()"""
+    try:
+        if isinstance(other, (int, float)):
+            return True
+        if self.is_unc(other):
+            return True
+        raise ValueError("Right-hand operand must be either a built-in\
+                             numerical type or Unc")
+
+    except ValueError:
+        print("ValueError")
+        raise
+
 def round_digits(self):
     """Implementation of Unc.round_digits()"""
     arr = array([self.mean_value, self.sigma_low, self.sigma_up])
@@ -139,6 +153,6 @@ def update_limits(self):
                       limits=self.limits, random_seed=self.seed)
     eval_result = self.eval(rand, force_inside_shortest_coverage=True)
 
-    self.set_mean_value(eval_result[0])
-    self.set_sigma_low(eval_result[1])
-    self.set_sigma_up(eval_result[2])
+    self.set_mean_value(eval_result.mean_value)
+    self.set_sigma_low(eval_result.sigma_low)
+    self.set_sigma_up(eval_result.sigma_up)
