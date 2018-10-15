@@ -20,7 +20,7 @@ from math import inf
 
 from mc_statistics import check_num_array_argument, randn_asym
 
-from .algebra import add, mul, power, sub, truediv
+from .algebra import add, mul, power, rpower, sub, truediv
 from .evaluation import evaluate
 from .io import check_limit_update, check_numeric, round_digits, set_limits, set_lower_limit
 from .io import set_mean_value, set_sigma_low, set_sigma_up, set_upper_limit, update_limits
@@ -276,6 +276,8 @@ of randomly sampled values.
         other/self : Unc
         """
 
+        check_numeric(self, other)
+
         rtruediv_result = truediv(Unc(other, 0., 0.), self)
 
         return Unc(rtruediv_result[0], rtruediv_result[1], rtruediv_result[2])
@@ -398,3 +400,20 @@ of randomly sampled values.
         pow_result = power(self, other)
 
         return Unc(pow_result[0], pow_result[1], pow_result[2])
+    
+    def __rpow__(self, other):
+        """Calculate other**self
+
+        Parameters
+        ----------
+        self : Unc
+        other : float or int
+
+        Returns
+        -------
+        self*other : Unc
+        """
+
+        rpow_result = rpower(self, other)
+
+        return Unc(rpow_result[0], rpow_result[1], rpow_result[2])

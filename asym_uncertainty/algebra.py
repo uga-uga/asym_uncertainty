@@ -121,12 +121,34 @@ def power(self, other):
 
         check_numeric(self, other)
     
+        if isinstance(other, (int, float)):
+            return [self.mean_value**other, self.sigma_low**other, 
+                    self.sigma_up**other]
+
         if self.is_exact:
-            return [self.mean_value**other.mean_value, 0., 0.]
+            return [self.mean_value**other.mean_value, self.sigma_low**other.mean_value, 
+                    self.sigma_up**other.mean_value]
     
         rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                                limits=self.limits, random_seed=self.seed)
+        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                                limits=self.limits, random_seed=other.seed)
     
-        rand_result = rand_self**exponent
+        rand_result = rand_self**rand_other
     
+        return evaluate(rand_result)
+
+def rpower(self, other):
+        """Implementation of Unc.__pow__()"""
+
+        check_numeric(self, other)
+    
+        if self.is_exact:
+            return [other**self.mean_value, 0., 0.]
+
+        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                               limits=self.limits, random_seed=self.seed)
+
+        rand_result = other**rand_self
+
         return evaluate(rand_result)
