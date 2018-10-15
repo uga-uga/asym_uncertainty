@@ -327,7 +327,7 @@ def test_Unc_functions():
 
     a = Unc(1., 0.05, 0.05)
     c = exp(a)
-    assert c.mean_value >= 2.7 and c.mean_value <= 2.8
+    assert c.mean_value >= 2.65 and c.mean_value <= 2.8
 
     a = Unc(1., 0., 0.)
     c = exp(a)

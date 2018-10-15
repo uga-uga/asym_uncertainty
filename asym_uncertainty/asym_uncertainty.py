@@ -20,7 +20,7 @@ from math import inf
 
 from mc_statistics import check_num_array_argument, randn_asym
 
-from .algebra import truediv
+from .algebra import add, mul, power, sub, truediv
 from .evaluation import evaluate
 from .io import check_limit_update, check_numeric, round_digits, set_limits, set_lower_limit
 from .io import set_mean_value, set_sigma_low, set_sigma_up, set_upper_limit, update_limits
@@ -276,20 +276,9 @@ of randomly sampled values.
         other/self : Unc
         """
 
-        check_numeric(self, other)
-
         rtruediv_result = truediv(Unc(other, 0., 0.), self)
 
         return Unc(rtruediv_result[0], rtruediv_result[1], rtruediv_result[2])
-#        try:
-#            if isinstance(other, (int, float)):
-#                return Unc(other, 0., 0.)/Unc(self.mean_value, self.sigma_low, self.sigma_up)
-#
-#            raise ValueError("Left-hand operand must be either a built-in numerical type or Unc")
-#
-#        except ValueError:
-#            print("ValueError")
-#            raise
 
     def __add__(self, other):
         """Calculate self + other
@@ -304,32 +293,9 @@ of randomly sampled values.
         self + other : Unc
         """
 
-        try:
-            if not isinstance(other, (int, float, Unc)):
-                raise ValueError("Right-hand operand must be either a built-in\
-                                 numerical type or Unc")
+        add_result = add(self, other)
 
-        except ValueError:
-            print("ValueError")
-            raise
-
-        if isinstance(other, (int, float)):
-            return Unc(self.mean_value + other, self.sigma_low, self.sigma_up)
-
-        if self.seed == other.seed:
-            return 2.*Unc(self.mean_value, self.sigma_low, self.sigma_up)
-
-        if other.is_exact:
-            return Unc(self.mean_value + other.mean_value, self.sigma_low, self.sigma_up)
-
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                limits=self.limits, random_seed=other.seed)
-
-        rand_result = rand_self + rand_other
-
-        return self.eval(rand_result)
+        return Unc(add_result[0], add_result[1], add_result[2])
 
     def __radd__(self, other):
         """Calculate other + self
@@ -344,15 +310,9 @@ of randomly sampled values.
         other + self : Unc
         """
 
-        try:
-            if isinstance(other, (int, float)):
-                return Unc(self.mean_value + other, self.sigma_low, self.sigma_up)
+        radd_result = add(self, other)
 
-            raise ValueError("Left-hand operand must be either a built-in numerical type or Unc")
-
-        except ValueError:
-            print("ValueError")
-            raise
+        return Unc(radd_result[0], radd_result[1], radd_result[2])
 
     def __sub__(self, other):
         """Calculate self - other
@@ -367,32 +327,9 @@ of randomly sampled values.
         self - other : Unc
         """
 
-        try:
-            if not isinstance(other, (int, float, Unc)):
-                raise ValueError("Right-hand operand must be either a built-in\
-                                 numerical type or Unc")
+        sub_result = sub(self, other)
 
-        except ValueError:
-            print("ValueError")
-            raise
-
-        if isinstance(other, (int, float)):
-            return Unc(self.mean_value - other, self.sigma_low, self.sigma_up)
-
-        if self.seed == other.seed:
-            return Unc(0., 0., 0.)
-
-        if other.is_exact:
-            return Unc(self.mean_value - other.mean_value, self.sigma_low, self.sigma_up)
-
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                limits=self.limits, random_seed=other.seed)
-
-        rand_result = rand_self - rand_other
-
-        return self.eval(rand_result)
+        return Unc(sub_result[0], sub_result[1], sub_result[2])
 
     def __rsub__(self, other):
         """Calculate other - self
@@ -407,15 +344,9 @@ of randomly sampled values.
         other - self : Unc
         """
 
-        try:
-            if isinstance(other, (int, float)):
-                return Unc(self.mean_value - other, self.sigma_low, self.sigma_up)
+        rsub_result = sub(self, other)
 
-            raise ValueError("Left-hand operand must be either a built-in numerical type or Unc")
-
-        except ValueError:
-            print("ValueError")
-            raise
+        return Unc(rsub_result[0], rsub_result[1], rsub_result[2])
 
     def __mul__(self, other):
         """Calculate self*other
@@ -430,30 +361,9 @@ of randomly sampled values.
         self*other : Unc
         """
 
-        try:
-            if not isinstance(other, (int, float, Unc)):
-                raise ValueError("Right-hand operand must be either a built-in\
-                                 numerical type or Unc")
+        mul_result = mul(self, other)
 
-        except ValueError:
-            print("ValueError")
-            raise
-
-        if isinstance(other, (int, float)):
-            return Unc(self.mean_value*other, self.sigma_low*other, self.sigma_up*other)
-
-        if other.is_exact:
-            return (Unc(self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
-                        self.sigma_up*other.mean_value))
-
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                limits=self.limits, random_seed=other.seed)
-
-        rand_result = rand_self*rand_other
-
-        return self.eval(rand_result)
+        return Unc(mul_result[0], mul_result[1], mul_result[2])
 
     def __rmul__(self, other):
         """Calculate other*self
@@ -468,35 +378,23 @@ of randomly sampled values.
         self*other : Unc
         """
 
-        try:
-            if isinstance(other, (int, float)):
-                return Unc(self.mean_value*other, self.sigma_low*other, self.sigma_up*other)
+        rmul_result = mul(self, other)
 
-            raise ValueError("Left-hand operand must be either a built-in numerical type or Unc")
+        return Unc(rmul_result[0], rmul_result[1], rmul_result[2])
 
-        except ValueError:
-            print("ValueError")
-            raise
-
-    def __pow__(self, exponent):
-        """Calculate self**exponent
+    def __pow__(self, other):
+        """Calculate self**other
 
         Parameters
         ----------
         self : Unc
-        exponent : float
+        other: Unc
 
         Returns
         -------
-        self**exponent : Unc
+        self**other: Unc
         """
 
-        if self.is_exact:
-            return Unc(self.mean_value**exponent, 0., 0.)
+        pow_result = power(self, other)
 
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
-
-        rand_result = rand_self**exponent
-
-        return self.eval(rand_result)
+        return Unc(pow_result[0], pow_result[1], pow_result[2])
