@@ -18,7 +18,7 @@
 
 from math import inf
 
-from mc_statistics import check_num_array_argument, randn_asym
+from mc_statistics import check_num_array_argument
 
 from .algebra import add, mul, power, rpower, sub, truediv
 from .evaluation import evaluate
@@ -400,7 +400,7 @@ of randomly sampled values.
         pow_result = power(self, other)
 
         return Unc(pow_result[0], pow_result[1], pow_result[2])
-    
+
     def __rpow__(self, other):
         """Calculate other**self
 

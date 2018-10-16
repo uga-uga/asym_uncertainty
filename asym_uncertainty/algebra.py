@@ -49,118 +49,118 @@ def truediv(self, other):
     return evaluate(rand_result, force_inside_shortest_coverage=True)
 
 def add(self, other):
-        """Implementation of Unc.__add__()"""
+    """Implementation of Unc.__add__()"""
 
-        check_numeric(self, other)
+    check_numeric(self, other)
 
-        if isinstance(other, (int, float)):
-            return [self.mean_value + other, self.sigma_low, self.sigma_up]
+    if isinstance(other, (int, float)):
+        return [self.mean_value + other, self.sigma_low, self.sigma_up]
 
-        if self.seed == other.seed:
-            return [2.*self.mean_value, 2.*self.sigma_low, 2.*self.sigma_up]
+    if self.seed == other.seed:
+        return [2.*self.mean_value, 2.*self.sigma_low, 2.*self.sigma_up]
 
-        if other.is_exact:
-            return [self.mean_value + other.mean_value, self.sigma_low, self.sigma_up]
+    if other.is_exact:
+        return [self.mean_value + other.mean_value, self.sigma_low, self.sigma_up]
 
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                limits=self.limits, random_seed=other.seed)
+    rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                           limits=self.limits, random_seed=self.seed)
+    rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                            limits=self.limits, random_seed=other.seed)
 
-        rand_result = rand_self + rand_other
+    rand_result = rand_self + rand_other
 
-        return evaluate(rand_result)
+    return evaluate(rand_result)
 
 
 def sub(self, other):
-        """Implementation of Unc.__sub__()"""
+    """Implementation of Unc.__sub__()"""
 
-        check_numeric(self, other)
+    check_numeric(self, other)
 
-        if isinstance(other, (int, float)):
-            return [self.mean_value - other, self.sigma_low, self.sigma_up]
+    if isinstance(other, (int, float)):
+        return [self.mean_value - other, self.sigma_low, self.sigma_up]
 
-        if self.seed == other.seed:
-            return [0., 0., 0.]
+    if self.seed == other.seed:
+        return [0., 0., 0.]
 
-        if other.is_exact:
-            return [self.mean_value - other.mean_value, self.sigma_low, self.sigma_up]
+    if other.is_exact:
+        return [self.mean_value - other.mean_value, self.sigma_low, self.sigma_up]
 
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                limits=self.limits, random_seed=other.seed)
+    rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                           limits=self.limits, random_seed=self.seed)
+    rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                            limits=self.limits, random_seed=other.seed)
 
-        rand_result = rand_self - rand_other
+    rand_result = rand_self - rand_other
 
-        return evaluate(rand_result)
+    return evaluate(rand_result)
 
 def mul(self, other):
-        """Implementation of Unc.__mul__()"""
+    """Implementation of Unc.__mul__()"""
 
-        check_numeric(self, other)
+    check_numeric(self, other)
 
-        if isinstance(other, (int, float)):
-            return [self.mean_value*other, self.sigma_low*other, self.sigma_up*other]
+    if isinstance(other, (int, float)):
+        return [self.mean_value*other, self.sigma_low*other, self.sigma_up*other]
 
-        if other.is_exact:
-            return [self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
-                        self.sigma_up*other.mean_value]
+    if other.is_exact:
+        return [self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
+                self.sigma_up*other.mean_value]
 
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
-        rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                limits=self.limits, random_seed=other.seed)
+    rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                           limits=self.limits, random_seed=self.seed)
+    rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                            limits=self.limits, random_seed=other.seed)
 
-        rand_result = rand_self*rand_other
+    rand_result = rand_self*rand_other
 
-        return evaluate(rand_result)
+    return evaluate(rand_result)
 
 def power(self, other):
-        """Implementation of Unc.__pow__()"""
+    """Implementation of Unc.__pow__()"""
 
-        check_numeric(self, other)
-    
-        if isinstance(other, (int, float)):
-            return [self.mean_value**other, self.sigma_low**other, 
-                    self.sigma_up**other]
+    check_numeric(self, other)
 
-        if self.is_exact:
-            if other.is_exact:
-                return [self.mean_value**other.mean_value, 0., 0.]
+    if isinstance(other, (int, float)):
+        return [self.mean_value**other, self.sigma_low**other,
+                self.sigma_up**other]
 
-            rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                    limits=self.limits, random_seed=other.seed)
+    if self.is_exact:
+        if other.is_exact:
+            return [self.mean_value**other.mean_value, 0., 0.]
 
-            rand_result = self.mean_value**rand_other
-            
-            return evaluate(rand_result)
-    
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
         rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
                                 limits=self.limits, random_seed=other.seed)
-    
-        rand_result = rand_self**rand_other
-    
+
+        rand_result = self.mean_value**rand_other
+
         return evaluate(rand_result)
+
+    rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                           limits=self.limits, random_seed=self.seed)
+    rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                            limits=self.limits, random_seed=other.seed)
+
+    rand_result = rand_self**rand_other
+
+    return evaluate(rand_result)
 
 def rpower(self, other):
-        """Implementation of Unc.__pow__()"""
+    """Implementation of Unc.__pow__()"""
 
-        check_numeric(self, other)
-    
-       # Unreachable code
-       # if self.is_exact:
-       #     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up], 
-       #             limits=other.limits, random_seed=other.seed)
-       #     rand_result = rand_other**self.mean_value
+    check_numeric(self, other)
 
-       #     return evaluate(rand_result)
+   # Unreachable code
+   # if self.is_exact:
+   #     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+   #             limits=other.limits, random_seed=other.seed)
+   #     rand_result = rand_other**self.mean_value
 
-        rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
+   #     return evaluate(rand_result)
 
-        rand_result = other**rand_self
+    rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                           limits=self.limits, random_seed=self.seed)
 
-        return evaluate(rand_result)
+    rand_result = other**rand_self
+
+    return evaluate(rand_result)
