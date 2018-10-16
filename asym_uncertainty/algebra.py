@@ -126,8 +126,15 @@ def power(self, other):
                     self.sigma_up**other]
 
         if self.is_exact:
-            return [self.mean_value**other.mean_value, self.sigma_low**other.mean_value, 
-                    self.sigma_up**other.mean_value]
+            if other.is_exact:
+                return [self.mean_value**other.mean_value, 0., 0.]
+
+            rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
+                                    limits=self.limits, random_seed=other.seed)
+
+            rand_result = self.mean_value**rand_other
+            
+            return evaluate(rand_result)
     
         rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                                limits=self.limits, random_seed=self.seed)
@@ -143,8 +150,13 @@ def rpower(self, other):
 
         check_numeric(self, other)
     
-        if self.is_exact:
-            return [other**self.mean_value, 0., 0.]
+       # Unreachable code
+       # if self.is_exact:
+       #     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up], 
+       #             limits=other.limits, random_seed=other.seed)
+       #     rand_result = rand_other**self.mean_value
+
+       #     return evaluate(rand_result)
 
         rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                                limits=self.limits, random_seed=self.seed)

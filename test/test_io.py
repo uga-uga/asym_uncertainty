@@ -79,6 +79,18 @@ class TestIO(object):
         assert a.limits[0] == 0.1
         assert a.limits[1] == 0.9
 
+        # Check that the numerical values of mean_value, sigma_low and sigma_up are reset
+        # when the limits are changed
+
+        a = Unc(0., 1., 1.)
+        a.set_limits([-1., 1.])
+
+        # A normal distribution restricted to the range [-1, 1] should have its 68.27 % coverage
+        # interval between ~[-0.622, 0.622]
+        assert -0.622 <= a.mean_value <= 0.622
+        assert a.mean_value - a.sigma_low > -1.
+        assert a.mean_value + a.sigma_up < 1.
+
     def test_Unc_output(self):
         b = Unc(1., 0., 0.)
 

@@ -87,6 +87,13 @@ class TestUncAlgebra(object):
 
         assert power.mean_value >= 1.27 - STATISTICAL_UNCERTAINTY_LIMIT*1.27 and power.mean_value <= 1.27 + STATISTICAL_UNCERTAINTY_LIMIT*1.27
 
+        # The same with an exact Unc number:
+        b = Unc(2., 0., 0.)
+
+        power = b**a
+
+        assert power.mean_value >= 1.27 - STATISTICAL_UNCERTAINTY_LIMIT*1.27 and power.mean_value <= 1.27 + STATISTICAL_UNCERTAINTY_LIMIT*1.27
+
         # For the case where y is exact and x has a normal distribution, no general expression
         # exists. However, x**1 should yield x.
 

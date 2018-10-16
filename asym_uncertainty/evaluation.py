@@ -28,8 +28,8 @@ def evaluate(rand_result, force_inside_shortest_coverage=True):
         hist, bins = histogram(
             extract((rand_result >= s_cov[0])*(rand_result <= s_cov[1]), rand_result),
             bins="sqrt")
-    else:
-        hist, bins = histogram(rand_result, bins="sqrt")
+#    else:
+#        hist, bins = histogram(rand_result, bins="sqrt")
 
     most_probable = bins[argmax(hist)]
 
