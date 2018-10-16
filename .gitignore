@@ -9,3 +9,4 @@ build
 dist
 htmlcov
 test/__pycache__
+test/*.pdf

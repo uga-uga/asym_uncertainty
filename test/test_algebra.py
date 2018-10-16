@@ -78,7 +78,7 @@ class TestUncAlgebra(object):
         # z = exp(mu + sigma*y)
         # where y is the normal-distributed variable, the result z has a log-normal distribution
         # with mean value m and variance v, which are related to mu and sigma via
-        # mu = ln(m/sqrt(1 + v/(m**2))) and sigma = sqrt(ln(1 + v/(m**2)))
+        # mu = ln(m/sqrt(1 + v**2/(m**2))) and sigma = sqrt(ln(1 + v**2/(m**2)))
         # In the example, mu = 0 and sigma = ln(x) with x = 2
         # Then, the mean value of the log-normal distribution should be about 1.27
         a = Unc(1., 1., 1.)

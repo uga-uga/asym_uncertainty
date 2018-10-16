@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
         name='asym_uncertainty',
-        version='0.4.0',
+        version='0.5.0',
         description='Algebra for quantities with asymmetric uncertainties using a Monte-Carlo uncertainty propagation method.',
         url='http://github.com/uga-uga/asym_uncertainty',
         author='Udo Gayer',
@@ -12,5 +12,5 @@ setup(
         packages=['asym_uncertainty'],
         install_requires=['numpy', 'mc_statistics>=0.3'],
         setup_requires=['pytest-runner'],
-        tests_require=['pytest', 'pytest-cov', 'numpy'],
+        tests_require=['pytest', 'pytest-cov', 'numpy', 'matplotlib'],
 )
