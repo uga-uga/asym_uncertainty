@@ -395,9 +395,9 @@ class Unc:
 
         rtruediv_result = truediv(Unc(other, 0., 0.), self)
 
-        if self.store:
-            return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
-                       random_values=rtruediv_result[0][1])
+#        if self.store:
+#            return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
+#                       random_values=rtruediv_result[0][1])
         return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2])
 
     def __add__(self, other):
@@ -435,9 +435,9 @@ class Unc:
 
         radd_result = add(self, other)
 
-        if self.store:
-            return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2], 
-                       random_values=radd_result[1])
+#        if self.store:
+#            return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2], 
+#                       random_values=radd_result[1])
         return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2])
 
     def __sub__(self, other):
@@ -475,9 +475,9 @@ class Unc:
 
         rsub_result = sub(self, other)
 
-        if self.store:
-            return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],
-                       random_values=rsub_result[1])
+#        if self.store:
+#            return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],
+#                       random_values=rsub_result[1])
         return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2])
 
     def __mul__(self, other):
@@ -515,9 +515,9 @@ class Unc:
 
         rmul_result = mul(self, other)
 
-        if self.store:
-            return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2],
-                       random_values=rmul_result[1])
+#        if self.store:
+#            return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2],
+#                       random_values=rmul_result[1])
         return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2])
 
     def __pow__(self, other):
@@ -535,9 +535,9 @@ class Unc:
 
         pow_result = power(self, other)
 
-        if self.store:
-            return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2],
-                       random_values=pow_result[0])
+#        if self.store:
+#            return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2],
+#                       random_values=pow_result[0])
         return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2])
 
     def __rpow__(self, other):
@@ -555,7 +555,7 @@ class Unc:
 
         rpow_result = rpower(self, other)
 
-        if self.store:
-            return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2],
-                       random_values=rpow_result[1])
+#        if self.store:
+#            return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2],
+#                       random_values=rpow_result[1])
         return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2])
