@@ -15,6 +15,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with asym_uncertainty.  If not, see <http://www.gnu.org/licenses/>.
 
+from numpy import array
+
 from mc_statistics import randn_asym
 
 from .evaluation import evaluate
@@ -26,14 +28,14 @@ def truediv(self, other):
     check_numeric(self, other)
 
     if isinstance(other, (int, float)):
-        return [self.mean_value/other, self.sigma_low/other, self.sigma_up/other]
+        return ([self.mean_value/other, self.sigma_low/other, self.sigma_up/other], array([0.]))
 
     if self.seed == other.seed:
-        return [1., 0., 0.]
+        return ([1., 0., 0.], array([0.]))
 
     if other.is_exact:
-        return [self.mean_value/other.mean_value, self.sigma_low/other.mean_value,
-                self.sigma_up/other.mean_value]
+        return ([self.mean_value/other.mean_value, self.sigma_low/other.mean_value,
+                self.sigma_up/other.mean_value], array([0.]))
 
     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
                             limits=self.limits, random_seed=other.seed)
@@ -54,13 +56,13 @@ def add(self, other):
     check_numeric(self, other)
 
     if isinstance(other, (int, float)):
-        return [self.mean_value + other, self.sigma_low, self.sigma_up]
+        return ([self.mean_value + other, self.sigma_low, self.sigma_up], array([0.]))
 
     if self.seed == other.seed:
-        return [2.*self.mean_value, 2.*self.sigma_low, 2.*self.sigma_up]
+        return ([2.*self.mean_value, 2.*self.sigma_low, 2.*self.sigma_up], array([0.]))
 
     if other.is_exact:
-        return [self.mean_value + other.mean_value, self.sigma_low, self.sigma_up]
+        return ([self.mean_value + other.mean_value, self.sigma_low, self.sigma_up], array([0.]))
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                            limits=self.limits, random_seed=self.seed)
@@ -78,13 +80,13 @@ def sub(self, other):
     check_numeric(self, other)
 
     if isinstance(other, (int, float)):
-        return [self.mean_value - other, self.sigma_low, self.sigma_up]
+        return ([self.mean_value - other, self.sigma_low, self.sigma_up], array([0.]))
 
     if self.seed == other.seed:
-        return [0., 0., 0.]
+        return ([0., 0., 0.], array([0.]))
 
     if other.is_exact:
-        return [self.mean_value - other.mean_value, self.sigma_low, self.sigma_up]
+        return ([self.mean_value - other.mean_value, self.sigma_low, self.sigma_up], array([0.]))
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                            limits=self.limits, random_seed=self.seed)
@@ -101,11 +103,11 @@ def mul(self, other):
     check_numeric(self, other)
 
     if isinstance(other, (int, float)):
-        return [self.mean_value*other, self.sigma_low*other, self.sigma_up*other]
+        return ([self.mean_value*other, self.sigma_low*other, self.sigma_up*other], array([0.]))
 
     if other.is_exact:
-        return [self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
-                self.sigma_up*other.mean_value]
+        return ([self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
+                self.sigma_up*other.mean_value], array([0.]))
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                            limits=self.limits, random_seed=self.seed)
@@ -122,12 +124,12 @@ def power(self, other):
     check_numeric(self, other)
 
     if isinstance(other, (int, float)):
-        return [self.mean_value**other, self.sigma_low**other,
-                self.sigma_up**other]
+        return ([self.mean_value**other, self.sigma_low**other,
+                self.sigma_up**other], array([0.]))
 
     if self.is_exact:
         if other.is_exact:
-            return [self.mean_value**other.mean_value, 0., 0.]
+            return ([self.mean_value**other.mean_value, 0., 0.], array([0.]))
 
         rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
                                 limits=self.limits, random_seed=other.seed)

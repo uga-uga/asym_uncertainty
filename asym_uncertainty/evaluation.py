@@ -33,4 +33,4 @@ def evaluate(rand_result, force_inside_shortest_coverage=True):
 
     most_probable = bins[argmax(hist)]
 
-    return [most_probable, most_probable - s_cov[0], s_cov[1] - most_probable]
+    return ([most_probable, most_probable - s_cov[0], s_cov[1] - most_probable], rand_result)

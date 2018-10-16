@@ -24,8 +24,9 @@ from mc_statistics import check_num_array_argument
 
 from .algebra import add, mul, power, rpower, sub, truediv
 from .evaluation import evaluate
-from .io import check_limit_update, check_numeric, round_digits, set_limits, set_lower_limit
-from .io import set_mean_value, set_sigma_low, set_sigma_up, set_upper_limit, update_limits
+from .io import check_limit_update, check_numeric, round_digits, sample_random_numbers
+from .io import set_limits, set_lower_limit, set_mean_value, set_sigma_low, set_sigma_up
+from .io import set_upper_limit, update_limits
 
 class Unc:
     """Class for a quantity with asymmetric uncertainty
@@ -76,9 +77,9 @@ class Unc:
     ----------
     mean_value: float
         Most probable value of x.
-    sigma_low: float 
+    sigma_low: float
         mean_value - sigma_low is the lower limit of the shortest coverage interval
-    sigma_up: float 
+    sigma_up: float
         mean_value + sigma_up is the upper limit of the shortest coverage interval
 
     is_exact: bool
@@ -99,13 +100,18 @@ class Unc:
         x appears several times.
 
     store: bool
-        If True, a numpy array of the values x_rand is stored in the Unc object.
+        If True, a numpy array of the values x_rand is stored in the Unc object. Furthermore, the
+        resulting Unc object from a calculation will also store the randomly sampled values
+        from which its mean and shortest coverage interval were determined.
+    random_values: numpy array
+        Array of randomly sampled numbers from the probability distribution of Unc. The number of
+        values is given by the settings of the imported mc_statistics package.
     """
 
     # Count the number of instances of Unc
     n_instances = 0
 
-    def __init__(self, mean_value, sigma_low, sigma_up, limits=None, store=False):
+    def __init__(self, mean_value, sigma_low, sigma_up, limits=None, store=False, random_values=array([0.])):
         """Initialization of members of Unc
 
         See the class docstring of Unc for the meaning of the member variables
@@ -118,6 +124,7 @@ class Unc:
         sigma_up: float
         limits: [float, float]
         store: bool
+        random_values: numpy array
         """
         try:
             self.mean_value = mean_value
@@ -149,14 +156,23 @@ class Unc:
         Unc.n_instances += 1
 
         self.store = store
-        if self.store:
-            self.random_values = array([0.])
-        else:
-            self.random_values = array([0.])
+        self.random_values = random_values
+
+        if self.store and len(random_values) < 2:
+            self.sample_random_numbers()
 
     ###################################################
     # Input / Output
     ###################################################
+
+    def sample_random_numbers(self):
+        """Sample random numbers from the distribution of Unc
+
+        Using the mean value, the shortest coverage interval and the limits, sample random
+        numbers and store them in the random_values member variable.
+        """
+
+        sample_random_numbers(self)
 
     def set_mean_value(self, mean_value):
         """Set the value of mean_value
@@ -281,10 +297,9 @@ class Unc:
     # Evaluation of results
     ###################################################
 
-    @classmethod
-    def eval(cls, rand_result, force_inside_shortest_coverage=True):
+    def eval(self, rand_result, force_inside_shortest_coverage=True):
         """Evaluate the most probable value (or the mean value) and the shortest coverage interval \
-of randomly sampled values.
+                of randomly sampled values.
 
         Parameters
         ----------
@@ -301,7 +316,10 @@ of randomly sampled values.
         eval_result = evaluate(rand_result=rand_result,
                                force_inside_shortest_coverage=force_inside_shortest_coverage)
 
-        return Unc(eval_result[0], eval_result[1], eval_result[2])
+        if self.store:
+            return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2],
+                       random_values=eval_result[1])
+        return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2])
 
     @classmethod
     def is_unc(cls, other):
@@ -354,7 +372,11 @@ of randomly sampled values.
 
         truediv_result = truediv(self, other)
 
-        return Unc(truediv_result[0], truediv_result[1], truediv_result[2])
+        if self.store:
+            return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2], 
+                       random_values=truediv_result[1])
+
+        return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2])
 
     def __rtruediv__(self, other):
         """Calculate other/self
@@ -373,7 +395,10 @@ of randomly sampled values.
 
         rtruediv_result = truediv(Unc(other, 0., 0.), self)
 
-        return Unc(rtruediv_result[0], rtruediv_result[1], rtruediv_result[2])
+        if self.store:
+            return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
+                       random_values=rtruediv_result[0][1])
+        return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2])
 
     def __add__(self, other):
         """Calculate self + other
@@ -390,7 +415,10 @@ of randomly sampled values.
 
         add_result = add(self, other)
 
-        return Unc(add_result[0], add_result[1], add_result[2])
+        if self.store:
+            return Unc(add_result[0][0], add_result[0][1], add_result[0][2],
+                       random_values=add_result[1])
+        return Unc(add_result[0][0], add_result[0][1], add_result[0][2])
 
     def __radd__(self, other):
         """Calculate other + self
@@ -407,7 +435,10 @@ of randomly sampled values.
 
         radd_result = add(self, other)
 
-        return Unc(radd_result[0], radd_result[1], radd_result[2])
+        if self.store:
+            return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2], 
+                       random_values=radd_result[1])
+        return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2])
 
     def __sub__(self, other):
         """Calculate self - other
@@ -424,7 +455,10 @@ of randomly sampled values.
 
         sub_result = sub(self, other)
 
-        return Unc(sub_result[0], sub_result[1], sub_result[2])
+        if self.store:
+            return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2], 
+                       random_values=sub_result[1])
+        return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2])
 
     def __rsub__(self, other):
         """Calculate other - self
@@ -441,7 +475,10 @@ of randomly sampled values.
 
         rsub_result = sub(self, other)
 
-        return Unc(rsub_result[0], rsub_result[1], rsub_result[2])
+        if self.store:
+            return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],
+                       random_values=rsub_result[1])
+        return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2])
 
     def __mul__(self, other):
         """Calculate self*other
@@ -458,7 +495,10 @@ of randomly sampled values.
 
         mul_result = mul(self, other)
 
-        return Unc(mul_result[0], mul_result[1], mul_result[2])
+        if self.store:
+            return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2],
+                       random_values=mul_result[1])
+        return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2])
 
     def __rmul__(self, other):
         """Calculate other*self
@@ -475,7 +515,10 @@ of randomly sampled values.
 
         rmul_result = mul(self, other)
 
-        return Unc(rmul_result[0], rmul_result[1], rmul_result[2])
+        if self.store:
+            return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2],
+                       random_values=rmul_result[1])
+        return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2])
 
     def __pow__(self, other):
         """Calculate self**other
@@ -492,7 +535,10 @@ of randomly sampled values.
 
         pow_result = power(self, other)
 
-        return Unc(pow_result[0], pow_result[1], pow_result[2])
+        if self.store:
+            return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2],
+                       random_values=pow_result[0])
+        return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2])
 
     def __rpow__(self, other):
         """Calculate other**self
@@ -509,4 +555,7 @@ of randomly sampled values.
 
         rpow_result = rpower(self, other)
 
-        return Unc(rpow_result[0], rpow_result[1], rpow_result[2])
+        if self.store:
+            return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2],
+                       random_values=rpow_result[1])
+        return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2])

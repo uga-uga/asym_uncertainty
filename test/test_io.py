@@ -1,5 +1,7 @@
 import pytest
 
+from numpy import mean, std
+
 from asym_uncertainty import exp, Unc
 
 class TestIO(object):
@@ -96,3 +98,17 @@ class TestIO(object):
 
         assert b.__repr__() == "1.0 - 0.0 + 0.0"
         assert b.__str__() == "1.0_{0.0}^{0.0}"
+
+    def test_random_sampling(self):
+        a = Unc(0., 1., 1., store=True)
+
+        mean_value = mean(a.random_values)
+        sigma = std(a.random_values)
+
+        assert -0.1 <= mean_value <= 0.1
+        assert 0.95 <= sigma <= 1.05
+
+        b = Unc(0., 1., 1.)
+
+        assert len(b.random_values) == 1
+        assert b.random_values[0] == 0.

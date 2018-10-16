@@ -18,7 +18,7 @@ Unc class"""
 
 from numpy import exp as nexp
 
-from asym_uncertainty import Unc
+from asym_uncertainty import evaluate, Unc
 from mc_statistics import randn_asym
 
 def exp(unc):
@@ -49,4 +49,8 @@ def exp(unc):
 
     rand_result = nexp(rand)
 
-    return unc.eval(rand_result, force_inside_shortest_coverage=True)
+    exp_result = evaluate(rand_result, force_inside_shortest_coverage=True) 
+
+    if unc.store:
+        return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2], random_values=exp_result[1])
+    return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2])

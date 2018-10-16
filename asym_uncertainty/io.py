@@ -78,6 +78,12 @@ def round_digits(self):
 
         self.rounded = arr_round
 
+def sample_random_numbers(self):
+    """Implementation of Unc.sample_random_numbers()"""
+
+    self.random_values = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                                    limits=self.limits, random_seed=self.seed)
+
 def set_limits(self, limits):
     """Implementation of Unc.set_limits()"""
 
@@ -96,16 +102,6 @@ def set_lower_limit(self, lower_limit):
     self.check_limit_update([lower_limit, self.limits[1]])
 
     self.limits[0] = lower_limit
-    self.update_limits()
-
-def set_upper_limit(self, upper_limit):
-    """Implementation of Unc.set_upper_limit()"""
-
-    check_num_array_argument([self.limits[0], upper_limit], 2, argument_name="Limits",
-                             is_increasing=True)
-    self.check_limit_update([self.limits[0], upper_limit])
-
-    self.limits[1] = upper_limit
     self.update_limits()
 
 def set_mean_value(self, mean_value):
@@ -145,6 +141,17 @@ def set_sigma_up(self, sigma_up):
     except ValueError:
         print("ValueError")
         raise
+
+def set_upper_limit(self, upper_limit):
+    """Implementation of Unc.set_upper_limit()"""
+
+    check_num_array_argument([self.limits[0], upper_limit], 2, argument_name="Limits",
+                             is_increasing=True)
+    self.check_limit_update([self.limits[0], upper_limit])
+
+    self.limits[1] = upper_limit
+    self.update_limits()
+
 
 def update_limits(self):
     """Implementation of Unc.update_limits()"""
