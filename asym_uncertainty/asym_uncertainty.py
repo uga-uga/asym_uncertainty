@@ -18,6 +18,8 @@
 
 from math import inf
 
+from numpy import array
+
 from mc_statistics import check_num_array_argument
 
 from .algebra import add, mul, power, rpower, sub, truediv
@@ -26,12 +28,97 @@ from .io import check_limit_update, check_numeric, round_digits, set_limits, set
 from .io import set_mean_value, set_sigma_low, set_sigma_up, set_upper_limit, update_limits
 
 class Unc:
-    """Class for a quantity with asymmetric uncertainty"""
+    """Class for a quantity with asymmetric uncertainty
+
+    An object of Unc represents a number x with asymmetric uncertainty
+
+    x = x_mean - dx_low + dx_up
+
+    for example
+
+    x = 1.0 + 0.5 - 0.3
+
+    The interval [dx_low, dx_up] is assumed to correspond to the 1-sigma interval of a
+    symmetric normal distribution N(x_mean, sigm), i.e. it contains about 68.27 % of the
+    probability distribution of x.
+    Unc implements mathematical operators to perform mathematical operations on numbers with
+    asymmetric uncertainties.
+    In a mathematical operation, the probability distribution for x is approximated as a
+    discontinuous combination of two normal distributions
+
+             | N(x_mean, dx_low), x <  x_mean
+    PDF(x) = |
+             | N(x_mean, dx_up ), x >= x_mean
+
+    The result of an operation z = O(x,y) on two numbers x and y with asymmetric uncertainty is
+    determined by sampling N random values x_rand and y_rand from their probability distributions
+    and calculating the result z_rand N times.
+    The given z_mean, dz_low and dz_up will be the most probable value of the resulting
+    distribution of z_rand and the limits of the shortest coverage interval (the shortest interval
+    that contains 68.27 % percent of the sampled values z_rand)
+
+    The probability distribution of a number with uncertainties can also be confined to a certain
+    interval, for example if only positive numbers are allowed in a calculation.
+
+    Note
+    ----
+    Assume the following attributes to be private members of Unc, i.e. do not change their values
+    like
+
+    Unc.limits[0] = x
+
+    The example above is especially critical, because changing the limits has an impact on several
+    other attributes of the Unc object (mean_value, sigma_low, sigma_up, is_exact, rounded).
+    Use the correponding set* methods, which take care of all the interdependencies between the
+    attributes.
+
+    Attributes
+    ----------
+    mean_value: float
+        Most probable value of x.
+    sigma_low: float 
+        mean_value - sigma_low is the lower limit of the shortest coverage interval
+    sigma_up: float 
+        mean_value + sigma_up is the upper limit of the shortest coverage interval
+
+    is_exact: bool
+        True, if sigma_low = sigma_up = 0. Used to simplify calculations, because if exact numbers
+        appear, no random sampling is needed.
+    limits: [float, float]
+        Limits of the probability distribution. Randomly sampled values x_rand will only be inside
+        inside [limits[0], limits[1]].
+
+    rounded: [float, float, float]
+        Rounded values of mean_value, sigma_low and sigma_up according to the rounding rules
+        of the Particle Data Group
+
+    seed: int
+        Static variable that counts the number of Unc objects created so far and seeds the random
+        number generator of x. Giving each number x a fixed seed makes it possible to introduce
+        correlations in calculations, for example in a calculation like z = x/(1+x) where
+        x appears several times.
+
+    store: bool
+        If True, a numpy array of the values x_rand is stored in the Unc object.
+    """
 
     # Count the number of instances of Unc
     n_instances = 0
 
-    def __init__(self, mean_value, sigma_low, sigma_up, limits=None):
+    def __init__(self, mean_value, sigma_low, sigma_up, limits=None, store=False):
+        """Initialization of members of Unc
+
+        See the class docstring of Unc for the meaning of the member variables
+        that can be set with __init__().
+
+        Parameters
+        ----------
+        mean_value: float
+        sigma_low: float
+        sigma_up: float
+        limits: [float, float]
+        store: bool
+        """
         try:
             self.mean_value = mean_value
 
@@ -60,6 +147,12 @@ class Unc:
         # Set unique random number seed as the number of instances of Unc
         self.seed = Unc.n_instances
         Unc.n_instances += 1
+
+        self.store = store
+        if self.store:
+            self.random_values = array([0.])
+        else:
+            self.random_values = array([0.])
 
     ###################################################
     # Input / Output
