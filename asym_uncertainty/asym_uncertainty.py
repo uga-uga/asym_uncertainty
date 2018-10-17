@@ -291,8 +291,9 @@ class Unc:
         return str(self.rounded[0]) + " - " + str(self.rounded[1]) + " + " + str(self.rounded[2])
 
     def __str__(self):
-        return (str(self.rounded[0]) + "_{" + str(self.rounded[1]) + "}^{" +
-                str(self.rounded[2]) + "}")
+        return self.__repr__()
+        #return (str(self.rounded[0]) + "_{" + str(self.rounded[1]) + "}^{" +
+        #        str(self.rounded[2]) + "}")
 
     ###################################################
     # Evaluation of results
