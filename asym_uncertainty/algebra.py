@@ -35,7 +35,7 @@ def truediv(self, other):
 
     if other.is_exact:
         return ([self.mean_value/other.mean_value, self.sigma_low/other.mean_value,
-                self.sigma_up/other.mean_value], array([0.]))
+                 self.sigma_up/other.mean_value], array([0.]))
 
     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
                             limits=self.limits, random_seed=other.seed)
@@ -107,7 +107,7 @@ def mul(self, other):
 
     if other.is_exact:
         return ([self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
-                self.sigma_up*other.mean_value], array([0.]))
+                 self.sigma_up*other.mean_value], array([0.]))
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                            limits=self.limits, random_seed=self.seed)
@@ -125,7 +125,7 @@ def power(self, other):
 
     if isinstance(other, (int, float)):
         return ([self.mean_value**other, self.sigma_low**other,
-                self.sigma_up**other], array([0.]))
+                 self.sigma_up**other], array([0.]))
 
     if self.is_exact:
         if other.is_exact:

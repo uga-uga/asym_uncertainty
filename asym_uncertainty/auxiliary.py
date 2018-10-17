@@ -1,3 +1,20 @@
+""" Auxiliary functions for Unc, for example analytical expressions of distributions"""
+
+#    This file is part of asym_uncertainty.
+#
+#    asym_uncertainty is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    asym_uncertainty is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with asym_uncertainty.  If not, see <http://www.gnu.org/licenses/>.
+
 from numpy import exp, pi, sqrt
 from scipy.stats import norm
 
@@ -24,7 +41,7 @@ def auxiliary_d(z, mu_num, sigma_num, mu_denom, sigma_denom):
 def gaussian_ratio_pdf(z, mu_num, sigma_num, mu_denom, sigma_denom):
     """ General ratio of two normal distributions
 
-    This function calculates the probability density function PDF for the ratio z=x/y of two 
+    This function calculates the probability density function PDF for the ratio z=x/y of two
     normal-distributed random variables x and y, where PDF(x) = N(mu_x, sigma_x) and
     PDF(y) = N(mu_y, sigma_y). The mean values mu and sigma can have arbitrary values.
 
@@ -41,7 +58,7 @@ def gaussian_ratio_pdf(z, mu_num, sigma_num, mu_denom, sigma_denom):
 
     Returns
     -------
-    float 
+    float
         PDF(z)
     """
 

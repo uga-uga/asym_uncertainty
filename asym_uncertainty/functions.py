@@ -49,8 +49,9 @@ def exp(unc):
 
     rand_result = nexp(rand)
 
-    exp_result = evaluate(rand_result, force_inside_shortest_coverage=True) 
+    exp_result = evaluate(rand_result, force_inside_shortest_coverage=True)
 
     if unc.store:
-        return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2], random_values=exp_result[1])
+        return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2],
+                   random_values=exp_result[1])
     return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2])

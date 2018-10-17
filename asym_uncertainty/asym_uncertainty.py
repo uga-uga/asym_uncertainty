@@ -111,7 +111,8 @@ class Unc:
     # Count the number of instances of Unc
     n_instances = 0
 
-    def __init__(self, mean_value, sigma_low, sigma_up, limits=None, store=False, random_values=array([0.])):
+    def __init__(self, mean_value, sigma_low, sigma_up, limits=None, store=False,
+                 random_values=array([0.])):
         """Initialization of members of Unc
 
         See the class docstring of Unc for the meaning of the member variables
@@ -373,7 +374,7 @@ class Unc:
         truediv_result = truediv(self, other)
 
         if self.store:
-            return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2], 
+            return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2],
                        random_values=truediv_result[1])
 
         return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2])
@@ -436,7 +437,7 @@ class Unc:
         radd_result = add(self, other)
 
 #        if self.store:
-#            return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2], 
+#            return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2],
 #                       random_values=radd_result[1])
         return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2])
 
@@ -456,7 +457,7 @@ class Unc:
         sub_result = sub(self, other)
 
         if self.store:
-            return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2], 
+            return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2],
                        random_values=sub_result[1])
         return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2])
 
