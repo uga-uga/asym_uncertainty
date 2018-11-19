@@ -161,7 +161,7 @@ class TestRandomSampling(object):
         x_values = linspace(x_min, x_max, n_x)
 
         ax.set_xlim([x_min, x_max])
-        ax.set_xlabel("y = (0.0 - 1.0 + 1.0) * (0.0 - 1.0 + 1.0)")
+        ax.set_xlabel("y = (2.0 - 0.1 + 0.1) / (2.0 - 0.1 + 0.1)")
 
         y_min = 0.
         y_max = 6.

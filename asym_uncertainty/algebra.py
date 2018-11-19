@@ -41,6 +41,8 @@ def truediv(self, other):
                             limits=self.limits, random_seed=other.seed)
 
     if self.is_exact:
+        if self.mean_value == 0.:
+            return ([0., 0., 0.], array([0.]))
         rand_result = self.mean_value/rand_other
 
     else:
@@ -63,6 +65,8 @@ def add(self, other):
 
     if other.is_exact:
         return ([self.mean_value + other.mean_value, self.sigma_low, self.sigma_up], array([0.]))
+    if self.is_exact:
+        return ([self.mean_value + other.mean_value, other.sigma_low, other.sigma_up], array([0.]))
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                            limits=self.limits, random_seed=self.seed)
@@ -87,6 +91,8 @@ def sub(self, other):
 
     if other.is_exact:
         return ([self.mean_value - other.mean_value, self.sigma_low, self.sigma_up], array([0.]))
+    if self.is_exact:
+        return ([self.mean_value - other.mean_value, other.sigma_low, other.sigma_up], array([0.]))
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                            limits=self.limits, random_seed=self.seed)
@@ -108,6 +114,10 @@ def mul(self, other):
     if other.is_exact:
         return ([self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
                  self.sigma_up*other.mean_value], array([0.]))
+    if self.is_exact:
+        return ([self.mean_value*other.mean_value, other.sigma_low*self.mean_value,
+                 other.sigma_up*self.mean_value], array([0.]))
+
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
                            limits=self.limits, random_seed=self.seed)

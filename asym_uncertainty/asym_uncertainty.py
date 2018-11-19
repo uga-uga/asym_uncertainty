@@ -376,7 +376,7 @@ class Unc:
 
         if self.store:
             return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2],
-                       random_values=truediv_result[1])
+                       random_values=truediv_result[1], store=True)
 
         return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2])
 
@@ -419,7 +419,7 @@ class Unc:
 
         if self.store:
             return Unc(add_result[0][0], add_result[0][1], add_result[0][2],
-                       random_values=add_result[1])
+                       random_values=add_result[1], store=True)
         return Unc(add_result[0][0], add_result[0][1], add_result[0][2])
 
     def __radd__(self, other):
@@ -459,7 +459,7 @@ class Unc:
 
         if self.store:
             return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2],
-                       random_values=sub_result[1])
+                       random_values=sub_result[1], store=True)
         return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2])
 
     def __rsub__(self, other):
@@ -499,7 +499,7 @@ class Unc:
 
         if self.store:
             return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2],
-                       random_values=mul_result[1])
+                       random_values=mul_result[1], store=True)
         return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2])
 
     def __rmul__(self, other):

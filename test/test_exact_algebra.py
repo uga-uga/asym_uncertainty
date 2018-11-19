@@ -73,6 +73,31 @@ class TestExactAlgebra(object):
         assert ratio.sigma_low== 1.
         assert ratio.sigma_low == 1.
 
+        # Check commutativity of algebraic operations with an exact Unc number
+        a = Unc(1., 1., 1.)
+        b = Unc(0., 0., 0.)
+
+        add = b + a
+        sub = b - a
+        mult = b*a
+        ratio = b/a
+
+        assert add.mean_value == 1.
+        assert add.sigma_low == 1.
+        assert add.sigma_up == 1.
+
+        assert sub.mean_value == -1.
+        assert sub.sigma_low == 1.
+        assert sub.sigma_up == 1.
+
+        assert mult.mean_value == 0.
+        assert mult.sigma_low == 0.
+        assert mult.sigma_up == 0.
+
+        assert ratio.mean_value == 0.
+        assert ratio.sigma_low== 0.
+        assert ratio.sigma_low == 0.
+
     def test_float_vs_Unc(self):
         # Test __radd__() and __rsub__() which determines the addition/subtraction of a normal float and Unc
         a = Unc(1., 0.1, 0.1)
