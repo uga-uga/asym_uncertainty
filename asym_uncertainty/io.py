@@ -156,10 +156,11 @@ def set_upper_limit(self, upper_limit):
 def update_limits(self):
     """Implementation of Unc.update_limits()"""
 
-    rand = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                      limits=self.limits, random_seed=self.seed)
-    eval_result = self.eval(rand, force_inside_shortest_coverage=True)
+    if not self.is_exact:
+        rand = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                          limits=self.limits, random_seed=self.seed)
+        eval_result = self.eval(rand, force_inside_shortest_coverage=True)
 
-    self.set_mean_value(eval_result.mean_value)
-    self.set_sigma_low(eval_result.sigma_low)
-    self.set_sigma_up(eval_result.sigma_up)
+        self.set_mean_value(eval_result.mean_value)
+        self.set_sigma_low(eval_result.sigma_low)
+        self.set_sigma_up(eval_result.sigma_up)

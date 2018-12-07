@@ -75,4 +75,4 @@ class TestRound(object):
         assert a.rounded[2] == 0.32
 
         # Check string representation
-        assert a.__repr__() == "0.05 - 0.12 + 0.32"
+        assert a.__repr__() == "Unc( mean_value=0.05, sigma_low=0.12, sigma_up=0.32, limits=[-inf, inf] )"

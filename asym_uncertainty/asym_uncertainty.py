@@ -288,10 +288,18 @@ class Unc:
         update_limits(self)
 
     def __repr__(self):
-        return str(self.rounded[0]) + " - " + str(self.rounded[1]) + " + " + str(self.rounded[2])
+        repr_string = ("Unc( mean_value=" + str(self.rounded[0]) + ", sigma_low=" +
+                       str(self.rounded[1]) + ", sigma_up=" + str(self.rounded[2]))
+        repr_string += ", limits=[" + str(self.limits[0]) + ", " + str(self.limits[1]) + "]"
+        if self.store:
+            repr_string += ", store=True"
+
+        repr_string += " )"
+
+        return repr_string
 
     def __str__(self):
-        return self.__repr__()
+        return str(self.rounded[0]) + " - " + str(self.rounded[1]) + " + " + str(self.rounded[2])
         #return (str(self.rounded[0]) + "_{" + str(self.rounded[1]) + "}^{" +
         #        str(self.rounded[2]) + "}")
 

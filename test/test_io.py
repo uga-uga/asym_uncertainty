@@ -111,8 +111,11 @@ class TestIO(object):
     def test_Unc_output(self):
         b = Unc(1., 0., 0.)
 
-        assert b.__repr__() == "1.0 - 0.0 + 0.0"
-        #assert b.__str__() == "1.0_{0.0}^{0.0}"
+        assert b.__repr__() == "Unc( mean_value=1.0, sigma_low=0.0, sigma_up=0.0, limits=[-inf, inf] )"
+        b.set_limits([-1., 2.])
+        assert b.__repr__() == "Unc( mean_value=1.0, sigma_low=0.0, sigma_up=0.0, limits=[-1.0, 2.0] )"
+        b.store=True
+        assert b.__repr__() == "Unc( mean_value=1.0, sigma_low=0.0, sigma_up=0.0, limits=[-1.0, 2.0], store=True )"
         assert b.__str__() == "1.0 - 0.0 + 0.0"
 
     def test_random_sampling(self):
