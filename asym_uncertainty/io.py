@@ -61,22 +61,29 @@ def round_digits(self):
     arr_sort = sort(arr)
     nonzero = extract(arr_sort > 0., arr_sort)
     if len(nonzero) is not 0:
-        first_digit = floor(log10(absolute(nonzero[0])))
-        # Make a decision on the number of displayed digits based on a recommendation
-        # by the PDG
-        first_three_digits = nround(nonzero[0]*10**(-first_digit+2))
+        if self.sigma_low == self.sigma_up == 0.:
+            arr_round = [self.mean_value, 0., 0.]
 
-        if 100 <= first_three_digits <= 354:
-            rounding_digits = 1
-        elif 355 <= first_three_digits <= 949:
-            rounding_digits = 0
         else:
-            rounding_digits = 1
+            first_digit = floor(log10(absolute(nonzero[0])))
+            # Make a decision on the number of displayed digits based on a recommendation
+            # by the PDG
+            first_three_digits = nround(nonzero[0]*10**(-first_digit+2))
 
-        arr_round = (nround(arr*10**(-first_digit+rounding_digits))/
-                     10**(-first_digit+rounding_digits))
+            if 100 <= first_three_digits <= 354:
+                rounding_digits = 1
+            elif 355 <= first_three_digits <= 949:
+                rounding_digits = 0
+            else:
+                rounding_digits = 1
 
-        self.rounded = arr_round
+            arr_round = (nround(arr*10**(-first_digit+rounding_digits))/
+                         10**(-first_digit+rounding_digits))
+
+            self.rounded = arr_round
+
+    # No else needed. If mean_value == sigma_low == sigma_up, the default value of
+    # self.rounded will be [0., 0., 0.] anyway.
 
 def sample_random_numbers(self):
     """Implementation of Unc.sample_random_numbers()"""

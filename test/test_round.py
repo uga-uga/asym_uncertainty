@@ -63,6 +63,14 @@ class TestRound(object):
         assert a.rounded[0] == 0.
         assert a.rounded[1] == 0.
         assert a.rounded[2] == 0.
+
+        # Test the case mean value != 0, sigma_low == sigma_up == 0.
+
+        a = Unc(12345678., 0., 0.)
+
+        assert a.rounded[0] == 12345678.
+        assert a.rounded[1] == 0.
+        assert a.rounded[2] == 0.
         
         # Check the updates of the rounded values when the
         # 'set_*' methods are called
