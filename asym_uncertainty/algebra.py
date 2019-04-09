@@ -82,12 +82,19 @@ def add(self, other):
     return evaluate(rand_result)
 
 
-def sub(self, other):
-    """Implementation of Unc.__sub__()"""
+def sub(self, other, rsub=False):
+    """Implementation of Unc.__sub__()
+    
+    This function has an additional flag which indicates whether sub() was called by the
+    __sub__() or the __rsub__() method of the Unc class.
+    This is important in the case when an int or float number is subtracted.
+    """
 
     check_numeric(self, other)
 
     if isinstance(other, (int, float)):
+        if rsub:
+            return ([other - self.mean_value, self.sigma_low, self.sigma_up], array([0.]))
         return ([self.mean_value - other, self.sigma_low, self.sigma_up], array([0.]))
 
     if self.seed == other.seed:

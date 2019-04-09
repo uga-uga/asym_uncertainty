@@ -503,7 +503,7 @@ class Unc:
         other - self : Unc
         """
 
-        rsub_result = sub(self, other)
+        rsub_result = sub(self, other, rsub=True)
 
 #        if self.store:
 #            return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],

@@ -75,20 +75,24 @@ class TestExactAlgebra(object):
 
         # Check commutativity of algebraic operations with an exact Unc number
         a = Unc(1., 1., 1.)
-        b = Unc(0., 0., 0.)
+        b = Unc(0.5, 0., 0.)
 
         add = b + a
         sub = b - a
-        mult = b*a
-        ratio = b/a
 
-        assert add.mean_value == 1.
+        assert add.mean_value == 1.5
         assert add.sigma_low == 1.
         assert add.sigma_up == 1.
 
-        assert sub.mean_value == -1.
+        assert sub.mean_value == -0.5
         assert sub.sigma_low == 1.
         assert sub.sigma_up == 1.
+
+        a = Unc(1., 1., 1.)
+        b = Unc(0., 0., 0.)
+
+        mult = b*a
+        ratio = b/a
 
         assert mult.mean_value == 0.
         assert mult.sigma_low == 0.
@@ -98,29 +102,38 @@ class TestExactAlgebra(object):
         assert ratio.sigma_low== 0.
         assert ratio.sigma_low == 0.
 
+        a = Unc(2., 1., 1.)
+        b = Unc(2., 0., 0.)
+
+        mult = b*a
+
+        assert mult.mean_value == 4.
+        assert mult.sigma_low == 2.
+        assert mult.sigma_up == 2.
+
     def test_float_vs_Unc(self):
         # Test __radd__() and __rsub__() which determines the addition/subtraction of a normal float and Unc
         a = Unc(1., 0.1, 0.1)
 
-        add = 1. + a
-        sub = 1. - a
+        add = 0.5 + a
+        sub = 0.5 - a
 
-        assert add.mean_value == 2.
+        assert add.mean_value == 1.5
         assert add.sigma_low == 0.1
         assert add.sigma_up == 0.1
 
-        assert sub.mean_value == 0.
+        assert sub.mean_value == -0.5
         assert sub.sigma_low == 0.1
         assert sub.sigma_up == 0.1
 
-        add = a + 1.
-        sub = a - 1.
+        add = a + 0.5
+        sub = a - 0.5
 
-        assert add.mean_value == 2.
+        assert add.mean_value == 1.5
         assert add.sigma_low == 0.1
         assert add.sigma_up == 0.1
 
-        assert sub.mean_value == 0.
+        assert sub.mean_value == 0.5
         assert sub.sigma_low == 0.1
         assert sub.sigma_up == 0.1
 
