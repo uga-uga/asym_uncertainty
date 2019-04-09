@@ -16,6 +16,7 @@
 import pytest
 
 from asym_uncertainty import Unc
+from numpy import array_equal
 
 class TestExactAlgebra(object):
     def test_exact_Unc(self):
@@ -110,6 +111,11 @@ class TestExactAlgebra(object):
         assert mult.mean_value == 4.
         assert mult.sigma_low == 2.
         assert mult.sigma_up == 2.
+
+        # Test the sign inversion
+        a = Unc(1., 0.5, 0.5, store=True)
+        b = -a
+        assert array_equal(b.random_values, -a.random_values)
 
     def test_float_vs_Unc(self):
         # Test __radd__() and __rsub__() which determines the addition/subtraction of a normal float and Unc

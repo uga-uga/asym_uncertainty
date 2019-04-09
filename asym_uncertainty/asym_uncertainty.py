@@ -348,8 +348,9 @@ class Unc:
 
         if self.store:
             return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2],
-                       random_values=eval_result[1])
-        return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2])
+                       random_values=eval_result[1], n_random=self.n_random)
+        return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2],
+                   n_random=self.n_random)
 
     @classmethod
     def is_unc(cls, other):
@@ -385,7 +386,13 @@ class Unc:
 
         """
 
-        return Unc(-self.mean_value, self.sigma_low, self.sigma_up)
+        if self.store:
+            return Unc(-self.mean_value, self.sigma_low, self.sigma_up,
+                       random_values=-1*self.random_values,
+                       n_random=self.n_random)
+
+        return Unc(-self.mean_value, self.sigma_low, self.sigma_up,
+                   n_random=self.n_random)
 
     def __truediv__(self, other):
         """Calculate self/other
@@ -404,9 +411,11 @@ class Unc:
 
         if self.store:
             return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2],
-                       random_values=truediv_result[1], store=True)
+                       random_values=truediv_result[1],
+                       n_random=self.n_random)
 
-        return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2])
+        return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2], 
+                   n_random=self.n_random)
 
     def __rtruediv__(self, other):
         """Calculate other/self
@@ -423,12 +432,14 @@ class Unc:
 
         check_numeric(self, other)
 
-        rtruediv_result = truediv(Unc(other, 0., 0.), self)
+        rtruediv_result = truediv(Unc(other, 0., 0., n_random=self.n_random), 
+                                  self)
 
 #        if self.store:
 #            return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
 #                       random_values=rtruediv_result[0][1])
-        return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2])
+        return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
+                   n_random=self.n_random)
 
     def __add__(self, other):
         """Calculate self + other
@@ -447,8 +458,10 @@ class Unc:
 
         if self.store:
             return Unc(add_result[0][0], add_result[0][1], add_result[0][2],
-                       random_values=add_result[1], store=True)
-        return Unc(add_result[0][0], add_result[0][1], add_result[0][2])
+                       random_values=add_result[1],
+                       n_random=self.n_random)
+        return Unc(add_result[0][0], add_result[0][1], add_result[0][2],
+                   n_random=self.n_random)
 
     def __radd__(self, other):
         """Calculate other + self
@@ -468,7 +481,8 @@ class Unc:
 #        if self.store:
 #            return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2],
 #                       random_values=radd_result[1])
-        return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2])
+        return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2],
+                   n_random=self.n_random)
 
     def __sub__(self, other):
         """Calculate self - other
@@ -487,8 +501,10 @@ class Unc:
 
         if self.store:
             return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2],
-                       random_values=sub_result[1], store=True)
-        return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2])
+                       random_values=sub_result[1],
+                       n_random=self.n_random)
+        return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2],
+                   n_random=self.n_random)
 
     def __rsub__(self, other):
         """Calculate other - self
@@ -508,7 +524,8 @@ class Unc:
 #        if self.store:
 #            return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],
 #                       random_values=rsub_result[1])
-        return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2])
+        return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],
+                   n_random=self.n_random)
 
     def __mul__(self, other):
         """Calculate self*other
@@ -527,8 +544,10 @@ class Unc:
 
         if self.store:
             return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2],
-                       random_values=mul_result[1], store=True)
-        return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2])
+                       random_values=mul_result[1],
+                       n_random=self.n_random)
+        return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2],
+                   n_random=self.n_random)
 
     def __rmul__(self, other):
         """Calculate other*self
@@ -548,7 +567,8 @@ class Unc:
 #        if self.store:
 #            return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2],
 #                       random_values=rmul_result[1])
-        return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2])
+        return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2],
+                   n_random=self.n_random)
 
     def __pow__(self, other):
         """Calculate self**other
@@ -568,7 +588,8 @@ class Unc:
 #        if self.store:
 #            return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2],
 #                       random_values=pow_result[0])
-        return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2])
+        return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2],
+                   n_random=self.n_random)
 
     def __rpow__(self, other):
         """Calculate other**self
@@ -588,4 +609,5 @@ class Unc:
 #        if self.store:
 #            return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2],
 #                       random_values=rpow_result[1])
-        return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2])
+        return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2],
+                   n_random=self.n_random)

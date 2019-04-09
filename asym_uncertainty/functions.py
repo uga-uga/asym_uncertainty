@@ -42,7 +42,8 @@ def exp(unc):
         raise
 
     if unc.is_exact:
-        return Unc(nexp(unc.mean_value), 0., 0.)
+        return Unc(nexp(unc.mean_value), 0., 0.,
+                   n_random=unc.n_random)
 
     rand = randn_asym(unc.mean_value, [unc.sigma_low, unc.sigma_up],
                       limits=unc.limits, random_seed=unc.seed,
@@ -54,5 +55,7 @@ def exp(unc):
 
     if unc.store:
         return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2],
-                   random_values=exp_result[1])
-    return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2])
+                   random_values=exp_result[1],
+                   n_random=unc.n_random)
+    return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2],
+               n_random=unc.n_random)
