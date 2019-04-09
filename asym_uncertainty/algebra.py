@@ -38,7 +38,8 @@ def truediv(self, other):
                  self.sigma_up/other.mean_value], array([0.]))
 
     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                            limits=self.limits, random_seed=other.seed)
+                            limits=self.limits, random_seed=other.seed,
+                            n_random=self.n_random)
 
     if self.is_exact:
         if self.mean_value == 0.:
@@ -47,7 +48,8 @@ def truediv(self, other):
 
     else:
         rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                               limits=self.limits, random_seed=self.seed)
+                               limits=self.limits, random_seed=self.seed,
+                               n_random=self.n_random)
         rand_result = rand_self/rand_other
 
     return evaluate(rand_result, force_inside_shortest_coverage=True)
@@ -69,9 +71,11 @@ def add(self, other):
         return ([self.mean_value + other.mean_value, other.sigma_low, other.sigma_up], array([0.]))
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                           limits=self.limits, random_seed=self.seed)
+                           limits=self.limits, random_seed=self.seed,
+                           n_random=self.n_random)
     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                            limits=self.limits, random_seed=other.seed)
+                            limits=self.limits, random_seed=other.seed,
+                            n_random=self.n_random)
 
     rand_result = rand_self + rand_other
 
@@ -95,9 +99,11 @@ def sub(self, other):
         return ([self.mean_value - other.mean_value, other.sigma_low, other.sigma_up], array([0.]))
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                           limits=self.limits, random_seed=self.seed)
+                           limits=self.limits, random_seed=self.seed,
+                           n_random=self.n_random)
     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                            limits=self.limits, random_seed=other.seed)
+                            limits=self.limits, random_seed=other.seed,
+                            n_random=self.n_random)
 
     rand_result = rand_self - rand_other
 
@@ -120,9 +126,11 @@ def mul(self, other):
 
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                           limits=self.limits, random_seed=self.seed)
+                           limits=self.limits, random_seed=self.seed,
+                           n_random=self.n_random)
     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                            limits=self.limits, random_seed=other.seed)
+                            limits=self.limits, random_seed=other.seed,
+                            n_random=self.n_random)
 
     rand_result = rand_self*rand_other
 
@@ -142,16 +150,19 @@ def power(self, other):
             return ([self.mean_value**other.mean_value, 0., 0.], array([0.]))
 
         rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                                limits=self.limits, random_seed=other.seed)
+                                limits=self.limits, random_seed=other.seed,
+                                n_random=self.n_random)
 
         rand_result = self.mean_value**rand_other
 
         return evaluate(rand_result)
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                           limits=self.limits, random_seed=self.seed)
+                           limits=self.limits, random_seed=self.seed,
+                           n_random=self.n_random)
     rand_other = randn_asym(other.mean_value, [other.sigma_low, other.sigma_up],
-                            limits=self.limits, random_seed=other.seed)
+                            limits=self.limits, random_seed=other.seed,
+                            n_random=self.n_random)
 
     rand_result = rand_self**rand_other
 
@@ -171,7 +182,8 @@ def rpower(self, other):
    #     return evaluate(rand_result)
 
     rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                           limits=self.limits, random_seed=self.seed)
+                           limits=self.limits, random_seed=self.seed,
+                           n_random=self.n_random)
 
     rand_result = other**rand_self
 

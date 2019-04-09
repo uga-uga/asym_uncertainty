@@ -89,7 +89,8 @@ def sample_random_numbers(self):
     """Implementation of Unc.sample_random_numbers()"""
 
     self.random_values = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                                    limits=self.limits, random_seed=self.seed)
+                                    limits=self.limits, random_seed=self.seed,
+                                    n_random=self.n_random)
 
 def set_limits(self, limits):
     """Implementation of Unc.set_limits()"""
@@ -115,6 +116,28 @@ def set_mean_value(self, mean_value):
     """Implementation of Unc.set_mean_value()"""
     self.mean_value = mean_value
     self.round_digits()
+
+def set_n_random(self, n_random):
+    """Implementation of Unc.set_n_random()"""
+    try:
+        if not isinstance(n_random, int):
+            raise ValueError("n_random must be an integer.")
+        if n_random < 2:
+            raise ValueError("n_random must be > 1.")
+
+        self.n_random = n_random
+        # If storage of sampled values is desired, update the number
+        # of stored random numbers, either by truncating the existing
+        # set, or by sampling anew.
+        if self.store:
+            if len(self.random_values) > n_random:
+                self.random_values = self.random_values[0:n_random]
+            else:
+                self.sample_random_numbers()
+
+    except ValueError:
+        print("ValueError")
+        raise
 
 def set_sigma_low(self, sigma_low):
     """Implementation of Unc.set_sigma_low()"""
@@ -165,7 +188,8 @@ def update_limits(self):
 
     if not self.is_exact:
         rand = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                          limits=self.limits, random_seed=self.seed)
+                          limits=self.limits, random_seed=self.seed,
+                          n_random=self.n_random)
         eval_result = self.eval(rand, force_inside_shortest_coverage=True)
 
         self.set_mean_value(eval_result.mean_value)

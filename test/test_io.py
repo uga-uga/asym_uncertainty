@@ -108,6 +108,27 @@ class TestIO(object):
         assert a.mean_value - a.sigma_low > -1.
         assert a.mean_value + a.sigma_up < 1.
 
+        # Check setting new value for n_random
+        a = Unc(1., 0.5, 0.5)
+        assert a.n_random == int(1e6)
+        with pytest.raises(ValueError):
+            a = Unc(1., 0.5, 0.5, n_random = 2.5)
+        with pytest.raises(ValueError):
+            a = Unc(1., 0.5, 0.5, n_random = -1)
+        a = Unc(1., 0.5, 0.5, n_random = 100)
+        assert a.n_random == 100
+        a.set_n_random(1000)
+        assert a.n_random == 1000
+
+        # Check that, if the value of n_random is changed, the size of the random_values
+        # array is adjusted accordingly if store = True
+        a = Unc(1., 0.5, 0.5, n_random = 100, store=True)
+        assert len(a.random_values) == 100
+        a.set_n_random(50)
+        assert len(a.random_values) == 50
+        a.set_n_random(100)
+        assert len(a.random_values) == 100
+
     def test_Unc_output(self):
         b = Unc(1., 0., 0.)
 

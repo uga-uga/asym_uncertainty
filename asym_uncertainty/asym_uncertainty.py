@@ -25,8 +25,8 @@ from mc_statistics import check_num_array_argument
 from .algebra import add, mul, power, rpower, sub, truediv
 from .evaluation import evaluate
 from .io import check_limit_update, check_numeric, round_digits, sample_random_numbers
-from .io import set_limits, set_lower_limit, set_mean_value, set_sigma_low, set_sigma_up
-from .io import set_upper_limit, update_limits
+from .io import set_limits, set_lower_limit, set_mean_value, set_n_random, set_sigma_low
+from .io import set_sigma_up, set_upper_limit, update_limits
 
 class Unc:
     """Class for a quantity with asymmetric uncertainty
@@ -106,13 +106,17 @@ class Unc:
     random_values: numpy array
         Array of randomly sampled numbers from the probability distribution of Unc. The number of
         values is given by the settings of the imported mc_statistics package.
+    n_random: int
+        Determines the number of randomly sampled numbers in each algebraic operation.
+        Must be larger than 1 to be able to apply statistical methods on the set of
+        random numbers.
     """
 
     # Count the number of instances of Unc
     n_instances = 0
 
     def __init__(self, mean_value, sigma_low, sigma_up, limits=None, store=False,
-                 random_values=array([0.])):
+                 random_values=array([0.]), n_random=int(1e6)):
         """Initialization of members of Unc
 
         See the class docstring of Unc for the meaning of the member variables
@@ -126,6 +130,7 @@ class Unc:
         limits: [float, float]
         store: bool
         random_values: numpy array
+        n_random: int
         """
         try:
             self.mean_value = mean_value
@@ -159,6 +164,9 @@ class Unc:
         self.store = store
         self.random_values = random_values
 
+        self.n_random = int(1e6)
+        self.set_n_random(n_random)
+
         if self.store and len(random_values) < 2:
             self.sample_random_numbers()
 
@@ -185,6 +193,18 @@ class Unc:
         """
 
         set_mean_value(self, mean_value)
+
+    def set_n_random(self, n_random):
+        """Set the value of n_random and check whether the new value is valid, \
+                i.e. n_random > 1 and isinstance(n_random, int)
+
+        Parameters
+        ----------
+        n_random: int
+            New value for n_random
+        """
+
+        set_n_random(self, n_random)
 
     def set_sigma_low(self, sigma_low):
         """Set the value of sigma_low and check whether the new value is valid, \

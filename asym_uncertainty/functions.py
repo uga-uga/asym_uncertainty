@@ -45,7 +45,8 @@ def exp(unc):
         return Unc(nexp(unc.mean_value), 0., 0.)
 
     rand = randn_asym(unc.mean_value, [unc.sigma_low, unc.sigma_up],
-                      limits=unc.limits, random_seed=unc.seed)
+                      limits=unc.limits, random_seed=unc.seed,
+                      n_random=unc.n_random)
 
     rand_result = nexp(rand)
 
