@@ -15,9 +15,12 @@
 
 import pytest
 
-from numpy import mean, std
+from numpy import array, mean, std
+from numpy.random import normal
 
 from asym_uncertainty import exp, Unc
+
+STATISTICAL_UNCERTAINTY_LIMIT = 0.2 # Maximum tolerated absolute deviation from exact result
 
 class TestIO(object):
     def test_Unc_input(self):
@@ -126,8 +129,19 @@ class TestIO(object):
         assert len(a.random_values) == 100
         a.set_n_random(50)
         assert len(a.random_values) == 50
-        a.set_n_random(100)
+        with pytest.warns(UserWarning) as record:
+            a.set_n_random(100)
+        assert len(record) == 1
+        assert "Requested n_random" in record[0].message.args[0]
         assert len(a.random_values) == 100
+
+        # Consistency check when both n_random and random_values are set in the constructor
+        with pytest.warns(UserWarning) as record:
+            a = Unc(1., 0.5, 0.5, random_values=array([1., 2., 3.]), n_random=4)
+        assert len(record) == 2
+        assert "but store set to False" in record[0].message.args[0]
+        assert "Inconsistent" in record[1].message.args[0]
+        assert len(a.random_values) == 3
 
     def test_Unc_output(self):
         b = Unc(1., 0., 0.)
@@ -152,3 +166,12 @@ class TestIO(object):
 
         assert len(b.random_values) == 1
         assert b.random_values[0] == 0.
+
+    def test_random_number_input(self):
+        # Check the correct updating of mean_value and sigma if a set of random values is
+        # given for initialization
+        a = Unc(10., 10., 10., random_values=normal(size=int(1e6)), store=True)
+
+        assert -STATISTICAL_UNCERTAINTY_LIMIT < a.mean_value < STATISTICAL_UNCERTAINTY_LIMIT
+        assert 1.-STATISTICAL_UNCERTAINTY_LIMIT < a.sigma_low < 1.+STATISTICAL_UNCERTAINTY_LIMIT
+        assert 1.-STATISTICAL_UNCERTAINTY_LIMIT < a.sigma_up < 1.+STATISTICAL_UNCERTAINTY_LIMIT

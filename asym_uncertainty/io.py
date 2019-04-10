@@ -1,5 +1,7 @@
 """Input/Output for the Unc class"""
 
+import warnings
+
 from numpy import array, absolute, sort, extract, floor, log10
 from numpy import minimum as nminimum
 from numpy import round as nround
@@ -82,7 +84,7 @@ def round_digits(self):
 
             self.rounded = arr_round
 
-    # No else needed. If mean_value == sigma_low == sigma_up, the default value of
+    # Nothing else needed. If mean_value == sigma_low == sigma_up, the default value of
     # self.rounded will be [0., 0., 0.] anyway.
 
 def sample_random_numbers(self):
@@ -130,9 +132,18 @@ def set_n_random(self, n_random):
         # of stored random numbers, either by truncating the existing
         # set, or by sampling anew.
         if self.store:
-            if len(self.random_values) > n_random:
+            if len(self.random_values) >= n_random:
                 self.random_values = self.random_values[0:n_random]
             else:
+                # This condition is there to ignore calls of set_n_random by the constructor
+                # of Unc. If the constructor is called with store=True and the default value
+                # of random_values, which is a length-1 numpy array, then the resizing of the
+                # array is intentional, and no warning is needed.
+                if len(self.random_values) > 1:
+                    warnings.warn("Requested n_random (%i) is larger than stored number of \
+                                  random values (%i). Sampling new set of random values assuming \
+                                  an asymmetric normal distribution." % 
+                                  (n_random, len(self.random_values)), UserWarning)
                 self.sample_random_numbers()
 
     except ValueError:

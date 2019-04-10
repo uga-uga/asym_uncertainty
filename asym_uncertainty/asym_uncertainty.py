@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with asym_uncertainty.  If not, see <http://www.gnu.org/licenses/>.
 
+import warnings
+
 from math import inf
 
 from numpy import array
@@ -116,7 +118,7 @@ class Unc:
     n_instances = 0
 
     def __init__(self, mean_value, sigma_low, sigma_up, limits=None, store=False,
-                 random_values=array([0.]), n_random=int(1e6)):
+                 random_values=array([0.]), n_random=None):
         """Initialization of members of Unc
 
         See the class docstring of Unc for the meaning of the member variables
@@ -161,14 +163,39 @@ class Unc:
         self.seed = Unc.n_instances
         Unc.n_instances += 1
 
+        if not store and len(random_values) > 1:
+            warnings.warn("Randomly sampled values initialized, but store set to False. \
+                          This may lead to unexpected results of calculations, because values \
+                          will still be sampled from the given mean_value and sigma.")
         self.store = store
         self.random_values = random_values
 
-        self.n_random = int(1e6)
-        self.set_n_random(n_random)
+        # Catch the cases when both rand_values and n_random are set.
+        # If the number of given random values does not agree with the desired
+        # n_random, prefer the number of random values.
+        # Subsequent calls to set_n_random which are not made by this constructor
+        # will truncate/enhance the existing set of random values as expected.
+        if len(random_values) > 1:
+            if n_random is not None and n_random != len(random_values):
+                warnings.warn("Inconsistent len(random_values) (%i) and n_random (%i) \
+                              given in initialization. Setting n_random to len(random_values)" %
+                              (len(random_values), n_random), UserWarning)
+            self.set_n_random(len(random_values))
 
-        if self.store and len(random_values) < 2:
-            self.sample_random_numbers()
+            # Re-evaluate mean_value of sigma_low/sigma_up, if a set of random numbers is
+            # given instead of those three characteristics.
+            eval_result = evaluate(random_values, force_inside_shortest_coverage=True)
+            self.set_mean_value(eval_result[0][0])
+            self.set_sigma_low(eval_result[0][1])
+            self.set_sigma_up(eval_result[0][2])
+        # If no random values are given to the constructor, initialize 
+        # n_random with its default value an execute the usual procedure of setting
+        # n_random.
+        else:
+            if n_random is not None:
+                self.set_n_random(n_random)
+            else:
+                self.set_n_random(int(1e6))
 
     ###################################################
     # Input / Output
@@ -348,7 +375,7 @@ class Unc:
 
         if self.store:
             return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2],
-                       random_values=eval_result[1], n_random=self.n_random)
+                       store=self.store, random_values=eval_result[1], n_random=self.n_random)
         return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2],
                    n_random=self.n_random)
 
@@ -373,6 +400,44 @@ class Unc:
     # Algebra
     ###################################################
 
+    def __add__(self, other):
+        """Calculate self + other
+
+        Parameters
+        ----------
+        self : Unc
+        other : Unc
+
+        Returns
+        -------
+        self + other : Unc
+        """
+
+        add_result, store_rand_result = add(self, other)
+
+        return Unc(add_result[0][0], add_result[0][1], add_result[0][2],
+                   random_values=add_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result, n_random=self.n_random)
+
+    def __mul__(self, other):
+        """Calculate self*other
+
+        Parameters
+        ----------
+        self : Unc
+        other : Unc
+
+        Returns
+        -------
+        self*other : Unc
+        """
+
+        mul_result, store_rand_result = mul(self, other)
+
+        return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2],
+                   random_values=mul_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result, n_random=self.n_random)
+
     def __neg__(self):
         """Switch the sign of Unc using the unary '-' operator
 
@@ -386,36 +451,104 @@ class Unc:
 
         """
 
-        if self.store:
-            return Unc(-self.mean_value, self.sigma_low, self.sigma_up,
-                       random_values=-1*self.random_values,
-                       n_random=self.n_random)
-
         return Unc(-self.mean_value, self.sigma_low, self.sigma_up,
-                   n_random=self.n_random)
+                   random_values=-self.random_values if self.store else array([0.]),
+                   store=self.store, n_random=self.n_random)
 
-    def __truediv__(self, other):
-        """Calculate self/other
+    def __pow__(self, other):
+        """Calculate self**other
 
         Parameters
         ----------
         self : Unc
-        other : Unc
+        other: Unc
 
         Returns
         -------
-        self/other : Unc
+        self**other: Unc
         """
 
-        truediv_result = truediv(self, other)
+        pow_result, store_rand_result = power(self, other)
 
-        if self.store:
-            return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2],
-                       random_values=truediv_result[1],
-                       n_random=self.n_random)
+        return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2],
+                   random_values=pow_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result, n_random=self.n_random)
 
-        return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2], 
-                   n_random=self.n_random)
+    def __radd__(self, other):
+        """Calculate other + self
+
+        Parameters
+        ----------
+        self : Unc
+        other : float or int
+
+        Returns
+        -------
+        other + self : Unc
+        """
+
+        radd_result, store_rand_result = add(self, other)
+
+        return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2],
+                   random_values=radd_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result, n_random=self.n_random)
+
+    def __rmul__(self, other):
+        """Calculate other*self
+
+        Parameters
+        ----------
+        self : Unc
+        other : float or int
+
+        Returns
+        -------
+        self*other : Unc
+        """
+
+        rmul_result, store_rand_result = mul(self, other)
+
+        return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2],
+                   random_values=rmul_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result, n_random=self.n_random)
+
+    def __rpow__(self, other):
+        """Calculate other**self
+
+        Parameters
+        ----------
+        self : Unc
+        other : float or int
+
+        Returns
+        -------
+        self*other : Unc
+        """
+
+        rpow_result, store_rand_result = rpower(self, other)
+
+        return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2],
+                   random_values=rpow_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result, n_random=self.n_random)
+
+    def __rsub__(self, other):
+        """Calculate other - self
+
+        Parameters
+        ----------
+        self : Unc
+        other : float or int
+
+        Returns
+        -------
+        other - self : Unc
+        """
+
+        rsub_result, store_rand_result = sub(self, other, rsub=True)
+
+        return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],
+                   random_values=rsub_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result, n_random=self.n_random)
 
     def __rtruediv__(self, other):
         """Calculate other/self
@@ -432,56 +565,12 @@ class Unc:
 
         check_numeric(self, other)
 
-        rtruediv_result = truediv(Unc(other, 0., 0., n_random=self.n_random), 
-                                  self)
+        rtruediv_result, store_rand_result = truediv(Unc(other, 0., 0., n_random=self.n_random,
+                                                         store=self.store), self)
 
-#        if self.store:
-#            return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
-#                       random_values=rtruediv_result[0][1])
         return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
-                   n_random=self.n_random)
-
-    def __add__(self, other):
-        """Calculate self + other
-
-        Parameters
-        ----------
-        self : Unc
-        other : Unc
-
-        Returns
-        -------
-        self + other : Unc
-        """
-
-        add_result = add(self, other)
-
-        if self.store:
-            return Unc(add_result[0][0], add_result[0][1], add_result[0][2],
-                       random_values=add_result[1],
-                       n_random=self.n_random)
-        return Unc(add_result[0][0], add_result[0][1], add_result[0][2],
-                   n_random=self.n_random)
-
-    def __radd__(self, other):
-        """Calculate other + self
-
-        Parameters
-        ----------
-        self : Unc
-        other : float or int
-
-        Returns
-        -------
-        other + self : Unc
-        """
-
-        radd_result = add(self, other)
-
-#        if self.store:
-#            return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2],
-#                       random_values=radd_result[1])
-        return Unc(radd_result[0][0], radd_result[0][1], radd_result[0][2],
+                   random_values=rtruediv_result[1] if store_rand_result else array([0.]), 
+                   store=store_rand_result,
                    n_random=self.n_random)
 
     def __sub__(self, other):
@@ -497,38 +586,14 @@ class Unc:
         self - other : Unc
         """
 
-        sub_result = sub(self, other)
+        sub_result, store_rand_result = sub(self, other)
 
-        if self.store:
-            return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2],
-                       random_values=sub_result[1],
-                       n_random=self.n_random)
         return Unc(sub_result[0][0], sub_result[0][1], sub_result[0][2],
-                   n_random=self.n_random)
+                   random_values=sub_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result, n_random=self.n_random)
 
-    def __rsub__(self, other):
-        """Calculate other - self
-
-        Parameters
-        ----------
-        self : Unc
-        other : float or int
-
-        Returns
-        -------
-        other - self : Unc
-        """
-
-        rsub_result = sub(self, other, rsub=True)
-
-#        if self.store:
-#            return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],
-#                       random_values=rsub_result[1])
-        return Unc(rsub_result[0][0], rsub_result[0][1], rsub_result[0][2],
-                   n_random=self.n_random)
-
-    def __mul__(self, other):
-        """Calculate self*other
+    def __truediv__(self, other):
+        """Calculate self/other
 
         Parameters
         ----------
@@ -537,77 +602,13 @@ class Unc:
 
         Returns
         -------
-        self*other : Unc
+        self/other : Unc
         """
 
-        mul_result = mul(self, other)
+        truediv_result, store_rand_result = truediv(self, other)
 
-        if self.store:
-            return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2],
-                       random_values=mul_result[1],
-                       n_random=self.n_random)
-        return Unc(mul_result[0][0], mul_result[0][1], mul_result[0][2],
+        return Unc(truediv_result[0][0], truediv_result[0][1], truediv_result[0][2],
+                   random_values=truediv_result[1] if store_rand_result else array([0.]),
+                   store=store_rand_result,
                    n_random=self.n_random)
 
-    def __rmul__(self, other):
-        """Calculate other*self
-
-        Parameters
-        ----------
-        self : Unc
-        other : float or int
-
-        Returns
-        -------
-        self*other : Unc
-        """
-
-        rmul_result = mul(self, other)
-
-#        if self.store:
-#            return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2],
-#                       random_values=rmul_result[1])
-        return Unc(rmul_result[0][0], rmul_result[0][1], rmul_result[0][2],
-                   n_random=self.n_random)
-
-    def __pow__(self, other):
-        """Calculate self**other
-
-        Parameters
-        ----------
-        self : Unc
-        other: Unc
-
-        Returns
-        -------
-        self**other: Unc
-        """
-
-        pow_result = power(self, other)
-
-#        if self.store:
-#            return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2],
-#                       random_values=pow_result[0])
-        return Unc(pow_result[0][0], pow_result[0][1], pow_result[0][2],
-                   n_random=self.n_random)
-
-    def __rpow__(self, other):
-        """Calculate other**self
-
-        Parameters
-        ----------
-        self : Unc
-        other : float or int
-
-        Returns
-        -------
-        self*other : Unc
-        """
-
-        rpow_result = rpower(self, other)
-
-#        if self.store:
-#            return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2],
-#                       random_values=rpow_result[1])
-        return Unc(rpow_result[0][0], rpow_result[0][1], rpow_result[0][2],
-                   n_random=self.n_random)

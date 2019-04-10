@@ -16,6 +16,7 @@ Unc class"""
 #    You should have received a copy of the GNU General Public License
 #    along with asym_uncertainty.  If not, see <http://www.gnu.org/licenses/>.
 
+from numpy import array
 from numpy import exp as nexp
 
 from asym_uncertainty import evaluate, Unc
@@ -43,19 +44,20 @@ def exp(unc):
 
     if unc.is_exact:
         return Unc(nexp(unc.mean_value), 0., 0.,
-                   n_random=unc.n_random)
+                   n_random=unc.n_random, random_values=nexp(unc.random_values),
+                   store=unc.store)
 
-    rand = randn_asym(unc.mean_value, [unc.sigma_low, unc.sigma_up],
-                      limits=unc.limits, random_seed=unc.seed,
-                      n_random=unc.n_random)
+    if unc.store:
+        rand = unc.random_values
+    else:
+        rand = randn_asym(unc.mean_value, [unc.sigma_low, unc.sigma_up],
+                          limits=unc.limits, random_seed=unc.seed,
+                          n_random=unc.n_random)
 
     rand_result = nexp(rand)
 
     exp_result = evaluate(rand_result, force_inside_shortest_coverage=True)
 
-    if unc.store:
-        return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2],
-                   random_values=exp_result[1],
-                   n_random=unc.n_random)
     return Unc(exp_result[0][0], exp_result[0][1], exp_result[0][2],
-               n_random=unc.n_random)
+               random_values=exp_result[1] if unc.store else array([0.]),
+               store=unc.store, n_random=unc.n_random)

@@ -13,6 +13,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with asym_uncertainty.  If not, see <http://www.gnu.org/licenses/>.
 
+import pytest
+
 from matplotlib.pyplot import hist, plot, subplots
 from numpy import linspace, pi, sqrt
 from scipy.special import kn
