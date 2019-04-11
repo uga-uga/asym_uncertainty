@@ -1,5 +1,5 @@
-"""Algebra for quantities with asymmetric uncertainties \
-        using a Monte-Carlo uncertainty propagation method"""
+"""Algebra for quantities with arbitrary probability distributions \
+        using a Monte Carlo uncertainty propagation method"""
 
 #    This file is part of asym_uncertainty.
 #
@@ -328,7 +328,7 @@ class Unc:
 
     def update_limits(self):
         """ If the limits for the distribution of Unc are changed, adapt mean_value,
-        sigma_low and sigma_up accordingly using the same Monte-Carlo method that is
+        sigma_low and sigma_up accordingly using the same Monte Carlo method that is
         used for all calculations
         """
 
