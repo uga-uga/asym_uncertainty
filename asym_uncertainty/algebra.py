@@ -133,9 +133,14 @@ def power(self, other):
         store_rand_result = True
 
     if isinstance(other, (int, float)):
-        return [([self.mean_value**other, self.sigma_low**other,
-                 self.sigma_up**other], self.random_values**other),
-                store_rand_result]
+        if self.store:
+            rand_self = self.random_values
+        else:
+            rand_self = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                                   limits=self.limits, random_seed=self.seed,
+                                   n_random=self.n_random)
+        rand_result = (rand_self**other)
+        return [evaluate(rand_result), store_rand_result]
 
     if other.store:
         store_rand_result = True

@@ -20,7 +20,7 @@ from numpy.random import normal
 
 from asym_uncertainty import exp, Unc
 
-STATISTICAL_UNCERTAINTY_LIMIT = 0.2 # Maximum tolerated absolute deviation from exact result
+STATISTICAL_UNCERTAINTY_LIMIT = 0.25 # Maximum tolerated absolute deviation from exact result
 
 class TestIO(object):
     def test_Unc_input(self):

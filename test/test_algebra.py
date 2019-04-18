@@ -118,6 +118,15 @@ class TestUncAlgebra(object):
         assert power.sigma_low >= 1. - STATISTICAL_UNCERTAINTY_LIMIT and power.sigma_low <= 1. + STATISTICAL_UNCERTAINTY_LIMIT
         assert power.sigma_up >= 1. - STATISTICAL_UNCERTAINTY_LIMIT and power.sigma_up <= 1. + STATISTICAL_UNCERTAINTY_LIMIT
 
+        # Test power against multiplication using stored random numbers.
+        a = Unc(1., 0.4, 0.4, store=True) 
+        power1 = a**2
+        power2 = a*a
+
+        assert power1.mean_value == power2.mean_value
+        assert power1.sigma_low == power2.sigma_low
+        assert power1.sigma_up == power2.sigma_up
+
         # Of course, the case where both values are normally distributed also does not have
         # an analytical expression, since it is a combination of the previous case.
         # Compared to the previous case, use a number with uncertainty for y, but keep its

@@ -3,6 +3,7 @@ asym_uncertainty.egg-info
 .eggs
 .pytest_cache
 *.swp
+*.swo
 
 asym_uncertainty/__pycache__
 build
