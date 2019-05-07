@@ -261,8 +261,11 @@ def truediv(self, other):
     store_rand_result = False
     check_numeric(self, other)
 
+    if self.store:
+        store_rand_result = True
+
     if isinstance(other, (int, float)):
-        return [([self.mean_value/other, self.sigma_low/other, self.sigma_up/other], array([0.])),
+        return [([self.mean_value/other, self.sigma_low/other, self.sigma_up/other], self.random_values/other),
                 store_rand_result]
 
     if self.seed == other.seed:

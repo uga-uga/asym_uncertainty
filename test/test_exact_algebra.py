@@ -163,3 +163,24 @@ class TestExactAlgebra(object):
         assert ratio.mean_value == 1.
         assert ratio.sigma_low== 1.
         assert ratio.sigma_up == 1.
+
+    def test_store_persistence(self):
+        # Check that calculations including integers or floats preserve the Unc.store property
+        # and propagate the list of sampled random values Unc.random_values
+
+        a = Unc(1., 0.5, 0.5, store=True)
+        b = 1.
+
+        add = a + b
+        sub = a - b
+        mul = a * b
+        div = a / b
+        power = a**b
+        neg = -a
+
+        assert add.store
+        assert sub.store
+        assert mul.store
+        assert div.store
+        assert power.store
+        assert neg.store
