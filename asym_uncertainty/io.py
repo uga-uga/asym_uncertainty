@@ -125,7 +125,7 @@ def set_n_random(self, n_random):
         if not isinstance(n_random, int):
             raise ValueError("n_random must be an integer.")
         if n_random < 2:
-            raise ValueError("n_random must be > 1.")
+            raise ValueError("n_random must be > 1 and should be much larger than that.")
 
         self.n_random = n_random
         # If storage of sampled values is desired, update the number
@@ -141,8 +141,8 @@ def set_n_random(self, n_random):
                 # array is intentional, and no warning is needed.
                 if len(self.random_values) > 1:
                     warnings.warn("Requested n_random (%i) is larger than stored number of \
-                                  random values (%i). Sampling new set of random values assuming \
-                                  an asymmetric normal distribution." % 
+random values (%i). Sampling new set of random values assuming \
+an asymmetric normal distribution." %
                                   (n_random, len(self.random_values)), UserWarning)
                 self.sample_random_numbers()
 

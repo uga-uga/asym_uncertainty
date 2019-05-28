@@ -1,5 +1,5 @@
 """Algebra for quantities with arbitrary probability distributions \
-        using a Monte Carlo uncertainty propagation method"""
+using a Monte Carlo uncertainty propagation method"""
 
 #    This file is part of asym_uncertainty.
 #
@@ -41,39 +41,39 @@ class Unc:
 
     x = 1.0 + 0.5 - 0.3
 
-    The interval [dx_low, dx_up] is assumed to correspond to the 1-sigma interval of a
-    symmetric normal distribution N(x_mean, sigm), i.e. it contains about 68.27 % of the
-    probability distribution of x.
-    Unc implements mathematical operators to perform mathematical operations on numbers with
-    asymmetric uncertainties.
-    In a mathematical operation, the probability distribution for x is approximated as a
-    discontinuous combination of two normal distributions
+    The interval [dx_low, dx_up] is assumed to correspond to the 1-sigma interval of a \
+symmetric normal distribution N(x_mean, sigm), i.e. it contains about 68.27 % of the \
+probability distribution of x. \
+Unc implements mathematical operators to perform mathematical operations on numbers with \
+asymmetric uncertainties. \
+In a mathematical operation, the probability distribution for x is approximated as a \
+discontinuous combination of two normal distributions
 
              | N(x_mean, dx_low), x <  x_mean
     PDF(x) = |
              | N(x_mean, dx_up ), x >= x_mean
 
-    The result of an operation z = O(x,y) on two numbers x and y with asymmetric uncertainty is
-    determined by sampling N random values x_rand and y_rand from their probability distributions
-    and calculating the result z_rand N times.
-    The given z_mean, dz_low and dz_up will be the most probable value of the resulting
-    distribution of z_rand and the limits of the shortest coverage interval (the shortest interval
-    that contains 68.27 % percent of the sampled values z_rand)
+    The result of an operation z = O(x,y) on two numbers x and y with asymmetric uncertainty is \
+determined by sampling N random values x_rand and y_rand from their probability distributions \
+and calculating the result z_rand N times. \
+The given z_mean, dz_low and dz_up will be the most probable value of the resulting \
+distribution of z_rand and the limits of the shortest coverage interval (the shortest interval \
+that contains 68.27 % percent of the sampled values z_rand)
 
-    The probability distribution of a number with uncertainties can also be confined to a certain
-    interval, for example if only positive numbers are allowed in a calculation.
+    The probability distribution of a number with uncertainties can also be confined to a certain \
+interval, for example if only positive numbers are allowed in a calculation.
 
     Note
     ----
-    Assume the following attributes to be private members of Unc, i.e. do not change their values
-    like
+    Assume the following attributes to be private members of Unc, i.e. do not change their values \
+like
 
     Unc.limits[0] = x
 
-    The example above is especially critical, because changing the limits has an impact on several
-    other attributes of the Unc object (mean_value, sigma_low, sigma_up, is_exact, rounded).
-    Use the correponding set* methods, which take care of all the interdependencies between the
-    attributes.
+    The example above is especially critical, because changing the limits has an impact on several \
+other attributes of the Unc object (mean_value, sigma_low, sigma_up, is_exact, rounded). \
+Use the correponding set* methods, which take care of all the interdependencies between the \
+attributes.
 
     Attributes
     ----------
@@ -85,33 +85,33 @@ class Unc:
         mean_value + sigma_up is the upper limit of the shortest coverage interval
 
     is_exact: bool
-        True, if sigma_low = sigma_up = 0. Used to simplify calculations, because if exact numbers
-        appear, no random sampling is needed.
+        True, if sigma_low = sigma_up = 0. Used to simplify calculations, because if exact \
+numbers appear, no random sampling is needed.
     limits: [float, float]
-        Limits of the probability distribution. Randomly sampled values x_rand will only be inside
-        inside [limits[0], limits[1]].
+        Limits of the probability distribution. Randomly sampled values x_rand will only be \
+inside [limits[0], limits[1]].
 
     rounded: [float, float, float]
-        Rounded values of mean_value, sigma_low and sigma_up according to the rounding rules
-        of the Particle Data Group
+        Rounded values of mean_value, sigma_low and sigma_up according to the rounding rules \
+of the Particle Data Group
 
     seed: int
-        Static variable that counts the number of Unc objects created so far and seeds the random
-        number generator of x. Giving each number x a fixed seed makes it possible to introduce
-        correlations in calculations, for example in a calculation like z = x/(1+x) where
-        x appears several times.
+        Static variable that counts the number of Unc objects created so far and seeds the random \
+number generator of x. Giving each number x a fixed seed makes it possible to introduce \
+correlations in calculations, for example in a calculation like z = x/(1+x) where \
+x appears several times.
 
     store: bool
-        If True, a numpy array of the values x_rand is stored in the Unc object. Furthermore, the
-        resulting Unc object from a calculation will also store the randomly sampled values
-        from which its mean and shortest coverage interval were determined.
+        If True, a numpy array of the values x_rand is stored in the Unc object. Furthermore, this \
+property will be inherited, i.e. the \
+resulting Unc object from a calculation will also store the randomly sampled values \
+from which its mean and shortest coverage interval were determined.
     random_values: numpy array
-        Array of randomly sampled numbers from the probability distribution of Unc. The number of
-        values is given by the settings of the imported mc_statistics package.
+        Array of randomly sampled numbers from the probability distribution of Unc. The number of \
+values is given by the settings of the imported mc_statistics package.
     n_random: int
-        Determines the number of randomly sampled numbers in each algebraic operation.
-        Must be larger than 1 to be able to apply statistical methods on the set of
-        random numbers.
+        Determines the number of randomly sampled numbers in each algebraic operation. \
+Must be larger than 1 to be able to apply statistical methods on the set of random numbers.
     """
 
     # Count the number of instances of Unc
@@ -121,8 +121,8 @@ class Unc:
                  random_values=array([0.]), n_random=None):
         """Initialization of members of Unc
 
-        See the class docstring of Unc for the meaning of the member variables
-        that can be set with __init__().
+        See the class docstring of Unc for the meaning of the member variables \
+that can be set with __init__().
 
         Parameters
         ----------
@@ -155,6 +155,9 @@ class Unc:
             print("ValueError")
             raise
 
+        # Initialize n_random
+        self.n_random = None
+
         # Initialize rounded values
         self.rounded = [self.mean_value, self.sigma_low, self.sigma_up]
         self.round_digits()
@@ -165,8 +168,8 @@ class Unc:
 
         if not store and len(random_values) > 1:
             warnings.warn("Randomly sampled values initialized, but store set to False. \
-                          This may lead to unexpected results of calculations, because values \
-                          will still be sampled from the given mean_value and sigma.")
+This may lead to unexpected results of calculations, because values \
+will still be sampled from the given mean_value and sigma.")
         self.store = store
         self.random_values = random_values
 
@@ -178,7 +181,7 @@ class Unc:
         if len(random_values) > 1:
             if n_random is not None and n_random != len(random_values):
                 warnings.warn("Inconsistent len(random_values) (%i) and n_random (%i) \
-                              given in initialization. Setting n_random to len(random_values)" %
+given in initialization. Setting n_random to len(random_values)" %
                               (len(random_values), n_random), UserWarning)
             self.set_n_random(len(random_values))
 
@@ -188,8 +191,8 @@ class Unc:
             self.set_mean_value(eval_result[0][0])
             self.set_sigma_low(eval_result[0][1])
             self.set_sigma_up(eval_result[0][2])
-        # If no random values are given to the constructor, initialize 
-        # n_random with its default value an execute the usual procedure of setting
+        # If no random values are given to the constructor, initialize
+        # n_random with its default value and execute the usual procedure of setting
         # n_random.
         else:
             if n_random is not None:
@@ -204,8 +207,8 @@ class Unc:
     def sample_random_numbers(self):
         """Sample random numbers from the distribution of Unc
 
-        Using the mean value, the shortest coverage interval and the limits, sample random
-        numbers and store them in the random_values member variable.
+        Using the mean value, the shortest coverage interval and the limits, sample random \
+numbers and store them in the random_values member variable.
         """
 
         sample_random_numbers(self)
@@ -223,7 +226,7 @@ class Unc:
 
     def set_n_random(self, n_random):
         """Set the value of n_random and check whether the new value is valid, \
-                i.e. n_random > 1 and isinstance(n_random, int)
+i.e. n_random > 1 and isinstance(n_random, int)
 
         Parameters
         ----------
@@ -235,7 +238,7 @@ class Unc:
 
     def set_sigma_low(self, sigma_low):
         """Set the value of sigma_low and check whether the new value is valid, \
-                i.e. self.set_sigma_low(x) is safer than self.sigma_low = x.
+i.e. self.set_sigma_low(x) is safer than self.sigma_low = x.
 
         Parameters
         ----------
@@ -247,7 +250,7 @@ class Unc:
 
     def set_sigma_up(self, sigma_up):
         """Set the value of sigma_up and check whether the new value is valid, \
-                i.e. self.set_sigma_up(x) is safer than self.sigma_up = x.
+i.e. self.set_sigma_up(x) is safer than self.sigma_up = x.
 
         Parameters
         ----------
@@ -258,9 +261,8 @@ class Unc:
         set_sigma_up(self, sigma_up=sigma_up)
 
     def set_lower_limit(self, lower_limit):
-        """ Set the value of the lower limit and check whether the new value\
-        is valid, i.e. self.set_lower_limit(x) is safer than
-        self.lower_limit = x
+        """ Set the value of the lower limit and check whether the new value \
+is valid, i.e. self.set_lower_limit(x) is safer than self.lower_limit = x
 
         Parameters
         ----------
@@ -271,9 +273,9 @@ class Unc:
         set_lower_limit(self, lower_limit=lower_limit)
 
     def set_upper_limit(self, upper_limit):
-        """ Set the value of the upper limit and check whether the new value\
-        is valid, i.e. self.set_upper_limit(x) is safer than
-        self.upper_limit = x
+        """ Set the value of the upper limit and check whether the new value \
+is valid, i.e. self.set_upper_limit(x) is safer than \
+self.upper_limit = x
 
         Parameters
         ----------
@@ -284,9 +286,9 @@ class Unc:
         set_upper_limit(self, upper_limit=upper_limit)
 
     def set_limits(self, limits):
-        """ Set the value of the lower and upper limits and check whether the new values\
-        are valid, i.e. self.set_limits(x, y) is safer than
-        self.lower_limit = x and self.upper_limit = y
+        """ Set the value of the lower and upper limits and check whether the new values \
+are valid, i.e. self.set_limits(x, y) is safer than \
+self.lower_limit = x and self.upper_limit = y
 
         Parameters
         ----------
@@ -298,16 +300,17 @@ class Unc:
 
     def check_limit_update(self, new_limits):
         """ Check whether the new limits make sense, considering the old ones.
-        For example, assume that the previous limits were [-1, 1] for a number
-        Unc(0., 1., 1.) and the new ones are [10, 11].
-        In order to sample points within the new limits, highly improbable values
-        of the probability distribution would have to be sampled, leading to numerical
-        instabilities.
-        Going through the example:
-        The value of the CDF of the normal distribution with mean = 0 and sigma == 1
-        at x == 6 is already 0.9999999990134123, at x == 10, scipy.stats.norm.cdf simply
-        displays 1.0.
-        Consequently, using scipy.stats.norm.ppf(1.0) would yield infinity.
+
+        For example, assume that the previous limits were [-1, 1] for a number \
+Unc(0., 1., 1.) and the new ones are [10, 11]. \
+In order to sample points within the new limits, highly improbable values \
+of the probability distribution would have to be sampled, leading to numerical \
+instabilities.
+Going through the example:
+The value of the CDF of the normal distribution with mean = 0 and sigma == 1 \
+at x == 6 is already 0.9999999990134123, at x == 10, scipy.stats.norm.cdf simply \
+displays 1.0.
+Consequently, using scipy.stats.norm.ppf(1.0) would yield infinity.
 
         Parameters
         ----------
@@ -320,16 +323,16 @@ class Unc:
     def round_digits(self):
         """ Round mean value and uncertainty limits to a sensible number of digits
         for displaying them
-        The decision of how many digits to keep is made after recommendations
-        by the Particle Data Group (PDG)
+        The decision of how many digits to keep is made after recommendations \
+by the Particle Data Group (PDG)
         """
 
         round_digits(self)
 
     def update_limits(self):
-        """ If the limits for the distribution of Unc are changed, adapt mean_value,
-        sigma_low and sigma_up accordingly using the same Monte Carlo method that is
-        used for all calculations
+        """ If the limits for the distribution of Unc are changed, adapt mean_value, \
+sigma_low and sigma_up accordingly using the same Monte Carlo method that is \
+used for all calculations
         """
 
         update_limits(self)
@@ -356,7 +359,7 @@ class Unc:
 
     def eval(self, rand_result, force_inside_shortest_coverage=True):
         """Evaluate the most probable value (or the mean value) and the shortest coverage interval \
-                of randomly sampled values.
+of randomly sampled values.
 
         Parameters
         ----------
@@ -452,7 +455,7 @@ class Unc:
         """
 
         return Unc(-self.mean_value, self.sigma_low, self.sigma_up,
-                   random_values=-self.random_values if self.store else array([0.]),
+                   random_values=(-1)*self.random_values if self.store else array([0.]),
                    store=self.store, n_random=self.n_random)
 
     def __pow__(self, other):
@@ -569,7 +572,7 @@ class Unc:
                                                          store=self.store), self)
 
         return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
-                   random_values=rtruediv_result[1] if store_rand_result else array([0.]), 
+                   random_values=rtruediv_result[1] if store_rand_result else array([0.]),
                    store=store_rand_result,
                    n_random=self.n_random)
 
@@ -611,4 +614,3 @@ class Unc:
                    random_values=truediv_result[1] if store_rand_result else array([0.]),
                    store=store_rand_result,
                    n_random=self.n_random)
-

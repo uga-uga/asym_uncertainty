@@ -172,6 +172,7 @@ class TestIO(object):
         # given for initialization
         a = Unc(10., 10., 10., random_values=normal(size=int(1e6)), store=True)
 
+        assert len(a.random_values) == a.n_random
         assert -STATISTICAL_UNCERTAINTY_LIMIT < a.mean_value < STATISTICAL_UNCERTAINTY_LIMIT
         assert 1.-STATISTICAL_UNCERTAINTY_LIMIT < a.sigma_low < 1.+STATISTICAL_UNCERTAINTY_LIMIT
         assert 1.-STATISTICAL_UNCERTAINTY_LIMIT < a.sigma_up < 1.+STATISTICAL_UNCERTAINTY_LIMIT

@@ -51,7 +51,7 @@ def add(self, other):
                 store_rand_result]
     if self.is_exact:
         return [([self.mean_value + other.mean_value, other.sigma_low, other.sigma_up],
-                self.mean_value + other.random_values), store_rand_result]
+                 self.mean_value + other.random_values), store_rand_result]
 
     if self.store:
         rand_self = self.random_values
@@ -73,6 +73,18 @@ def add(self, other):
     return [evaluate(rand_result), store_rand_result]
 
 def array_size_min(array_1_length, array_2_length):
+    """Given two array sizes, warn if they are not equal. Always return the smaller value.
+
+    Parameters
+    ----------
+    array_1_length, array_2_length : int
+        Two integer numbers which are assumed to be lengths of arrays
+
+    Returns
+    -------
+        int
+        The minimum of array_1_length and array_2_length
+    """
     if array_1_length != array_2_length:
         warnings.warn("Truncated one array of random numbers due to array size mismatch.",
                       UserWarning)
@@ -96,11 +108,11 @@ def mul(self, other):
 
     if other.is_exact:
         return [([self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
-                 self.sigma_up*other.mean_value], self.random_values*other.mean_value),
+                  self.sigma_up*other.mean_value], self.random_values*other.mean_value),
                 store_rand_result]
     if self.is_exact:
         return [([self.mean_value*other.mean_value, other.sigma_low*self.mean_value,
-                 other.sigma_up*self.mean_value], self.mean_value*other.random_values),
+                  other.sigma_up*self.mean_value], self.mean_value*other.random_values),
                 store_rand_result]
 
 
@@ -202,7 +214,7 @@ def rpower(self, other):
 
 def sub(self, other, rsub=False):
     """Implementation of Unc.__sub__()
-    
+
     This function has an additional flag which indicates whether sub() was called by the
     __sub__() or the __rsub__() method of the Unc class.
     This is important in the case when an int or float number is subtracted.
@@ -231,10 +243,10 @@ def sub(self, other, rsub=False):
 
     if other.is_exact:
         return [([self.mean_value - other.mean_value, self.sigma_low, self.sigma_up],
-                self.random_values - other.mean_value), store_rand_result]
+                 self.random_values - other.mean_value), store_rand_result]
     if self.is_exact:
         return [([self.mean_value - other.mean_value, other.sigma_low, other.sigma_up],
-                self.mean_value - other.random_values), store_rand_result]
+                 self.mean_value - other.random_values), store_rand_result]
 
     if self.store:
         rand_self = self.random_values
@@ -250,7 +262,7 @@ def sub(self, other, rsub=False):
                                 n_random=other.n_random)
 
     common_array_size = array_size_min(len(rand_self), len(rand_other))
-    rand_result = (rand_self[0:common_array_size] - 
+    rand_result = (rand_self[0:common_array_size] -
                    rand_other[0:common_array_size])
 
     return [evaluate(rand_result), store_rand_result]
@@ -265,7 +277,8 @@ def truediv(self, other):
         store_rand_result = True
 
     if isinstance(other, (int, float)):
-        return [([self.mean_value/other, self.sigma_low/other, self.sigma_up/other], self.random_values/other),
+        return [([self.mean_value/other, self.sigma_low/other, self.sigma_up/other],
+                 self.random_values/other),
                 store_rand_result]
 
     if self.seed == other.seed:
@@ -273,8 +286,8 @@ def truediv(self, other):
 
     if other.is_exact:
         return [([self.mean_value/other.mean_value, self.sigma_low/other.mean_value,
-                 self.sigma_up/other.mean_value], self.random_values/other.mean_value),
-                 store_rand_result]
+                  self.sigma_up/other.mean_value], self.random_values/other.mean_value),
+                store_rand_result]
 
     if other.store:
         rand_other = other.random_values
