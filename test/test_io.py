@@ -90,10 +90,14 @@ class TestIO(object):
         a.set_upper_limit(1.)
         assert a.limits[0] == 0.
         assert a.limits[1] == 1.
-        # Try setting new limits which are outside the old ones. This should cause a
-        # RuntimeWarning
-        with pytest.raises(RuntimeWarning):
+        # Try setting new limits which are outside the old ones. This should cause a warning and
+        # an error
+        with pytest.raises(ValueError):
             a.set_limits([3., 4.])
+
+        with pytest.warns(RuntimeWarning) as record:
+            a.set_limits([0., 1.5])
+        assert "re-sampling stored random" in record[0].message.args[0]
 
         a.set_limits([0.1, 0.9])
         assert a.limits[0] == 0.1

@@ -33,11 +33,13 @@ def check_limit_update(self, new_limits):
 
     try:
         if new_limits[0] >= self.limits[1] or new_limits[1] <= self.limits[0]:
-            raise RuntimeWarning("New limits are outside of old limits,\
-                                 this may cause numerical unstabilities")
-    except RuntimeWarning:
-        print("RuntimeWarning")
+            raise ValueError("New limits are outside of old limits.")
+    except ValueError:
         raise
+
+    if new_limits[0] < self.limits[0] or new_limits[1] > self.limits[1]:
+        warnings.warn("New limits are larger than old limits, \
+re-sampling stored random values may give unexpected results.", RuntimeWarning)
 
 def check_numeric(self, other):
     """Implementation of Unc.check_numeric()"""
