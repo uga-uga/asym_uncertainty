@@ -5,8 +5,13 @@ import warnings
 from numpy import array, absolute, sort, extract, floor, log10
 from numpy import minimum as nminimum
 from numpy import round as nround
+from numpy.random import uniform
 
-from mc_statistics import check_num_array_argument, randn_asym
+from scipy.interpolate import interp1d
+
+from mc_statistics import cdf, check_num_array_argument, randn_asym
+
+from .evaluation import evaluate
 
 #    This file is part of asym_uncertainty.
 #
@@ -90,9 +95,46 @@ def round_digits(self):
 def sample_random_numbers(self):
     """Implementation of Unc.sample_random_numbers()"""
 
-    self.random_values = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                                    limits=self.limits, random_seed=self.seed,
-                                    n_random=self.n_random)
+    if len(self.random_values) > 1:
+        cdf_generating_random_values = (extract((self.random_values >= self.limits[0])*
+                                                (self.random_values <= self.limits[1]),
+                                                self.random_values))
+
+        random_value_fraction = (float(len(cdf_generating_random_values))/
+                                 float(len(self.random_values)))
+
+        try:
+            if len(cdf_generating_random_values) < 2:
+                raise ValueError("Trying to re-sample random numbers. \
+    Within the current limits, no CDF can be reconstructed from self.random_values, since \
+    less than two of them are inside the new limits.")
+
+        except ValueError:
+            raise
+
+        if len(cdf_generating_random_values) < 1000:
+            warnings.warn("Trying to re-sample random numbers. \
+Within the current limits, less than 1000 values will be available to construct a CDF. \
+This may lead to unintended behavior. Check whether the limits make sense or try increasing \
+n_random.", RuntimeWarning)
+        if random_value_fraction < 0.01:
+            warnings.warn("Trying to re-sample random numbers. \
+Within the current limits, less than 1 percent of the previous values will be available to \
+construct a CDF. This may lead to unintended behavior. Check whether the limits make sense or \
+try increasing n_random.", RuntimeWarning)
+
+        cdf_discrete = cdf(cdf_generating_random_values)
+        inverse_cdf = interp1d(cdf_discrete[1], cdf_discrete[0])
+        self.random_values = inverse_cdf(uniform(0., 1., size=self.n_random))
+
+    else:
+        self.random_values = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
+                                        limits=self.limits, random_seed=self.seed,
+                                        n_random=self.n_random)
+    eval_result = evaluate(self.random_values, force_inside_shortest_coverage=True)
+    self.set_mean_value(eval_result[0][0])
+    self.set_sigma_low(eval_result[0][1])
+    self.set_sigma_up(eval_result[0][2])
 
 def set_limits(self, limits):
     """Implementation of Unc.set_limits()"""
@@ -102,7 +144,8 @@ def set_limits(self, limits):
     self.check_limit_update(limits)
 
     self.limits = limits
-    self.update_limits()
+    if not self.is_exact:
+        self.sample_random_numbers()
 
 def set_lower_limit(self, lower_limit):
     """Implementation of Unc.set_lower_limit()"""
@@ -112,7 +155,8 @@ def set_lower_limit(self, lower_limit):
     self.check_limit_update([lower_limit, self.limits[1]])
 
     self.limits[0] = lower_limit
-    self.update_limits()
+    if not self.is_exact:
+        self.sample_random_numbers()
 
 def set_mean_value(self, mean_value):
     """Implementation of Unc.set_mean_value()"""
@@ -191,18 +235,5 @@ def set_upper_limit(self, upper_limit):
     self.check_limit_update([self.limits[0], upper_limit])
 
     self.limits[1] = upper_limit
-    self.update_limits()
-
-
-def update_limits(self):
-    """Implementation of Unc.update_limits()"""
-
     if not self.is_exact:
-        rand = randn_asym(self.mean_value, [self.sigma_low, self.sigma_up],
-                          limits=self.limits, random_seed=self.seed,
-                          n_random=self.n_random)
-        eval_result = self.eval(rand, force_inside_shortest_coverage=True)
-
-        self.set_mean_value(eval_result.mean_value)
-        self.set_sigma_low(eval_result.sigma_low)
-        self.set_sigma_up(eval_result.sigma_up)
+        self.sample_random_numbers()

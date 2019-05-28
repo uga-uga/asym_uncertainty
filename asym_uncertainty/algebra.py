@@ -300,8 +300,6 @@ def truediv(self, other):
     if self.is_exact:
         if self.mean_value == 0.:
             return [([0., 0., 0.], array([0.])), store_rand_result]
-        if self.store:
-            store_rand_result = True
         rand_result = self.mean_value/rand_other
 
     else:

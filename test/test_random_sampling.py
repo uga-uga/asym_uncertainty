@@ -298,8 +298,8 @@ class TestRandomSampling(object):
         fig.savefig('test/test_asymmetric.pdf')
 
     def test_truncated(self):
-        a = Unc(0., 1., 1., limits=[-1., 1.], store=True)
-        a.update_limits()
+        a = Unc(0., 1., 1., store=True)
+        a.set_limits([-1., 1.])
 
         assert len(a.random_values) > 1
 

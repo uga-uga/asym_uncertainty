@@ -16,7 +16,7 @@
 import pytest
 
 from numpy import array, mean, std
-from numpy.random import normal
+from numpy.random import normal, uniform
 
 from asym_uncertainty import exp, Unc
 
@@ -131,8 +131,9 @@ class TestIO(object):
         assert len(a.random_values) == 50
         with pytest.warns(UserWarning) as record:
             a.set_n_random(100)
-        assert len(record) == 1
+        assert len(record) == 2
         assert "Requested n_random" in record[0].message.args[0]
+        assert "less than 1000 values" in record[1].message.args[0]
         assert len(a.random_values) == 100
 
         # Consistency check when both n_random and random_values are set in the constructor
@@ -142,6 +143,30 @@ class TestIO(object):
         assert "but store set to False" in record[0].message.args[0]
         assert "Inconsistent" in record[1].message.args[0]
         assert len(a.random_values) == 3
+
+        # Check the warning that too many random values are lost if limits are reset
+        a = Unc(1., 0.5, 0.5, store=True, random_values=uniform(-1., 1., size=int(5e5)))
+        with pytest.warns(UserWarning):
+            a.set_n_random(int(1e6))
+        assert a.n_random == int(1e6)
+        assert len(a.random_values) == int(1e6)
+        with pytest.warns(RuntimeWarning) as record:
+            a.set_limits([0., 0.001])
+        assert len(record) == 2
+        assert "less than 1000 values" in record[0].message.args[0]
+        assert "less than 1 percent" in record[1].message.args[0]
+        assert len(a.random_values) == int(1e6)
+        assert a.n_random == int(1e6)
+        assert a.mean_value <= 0.001
+        assert a.mean_value >= 0.
+        assert a.sigma_up  <= 0.001
+        assert a.sigma_low >= 0.
+        assert a.sigma_up  <= 0.001
+        assert a.sigma_low >= 0.
+
+        a = Unc(1., 0.5, 0.5, store=True, random_values=uniform(-1., 1., size=int(5e5)))
+        with pytest.raises(ValueError):
+            a.set_limits([0., 1e-7])
 
     def test_Unc_output(self):
         b = Unc(1., 0., 0.)

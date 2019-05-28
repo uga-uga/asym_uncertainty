@@ -28,7 +28,7 @@ from .algebra import add, mul, power, rpower, sub, truediv
 from .evaluation import evaluate
 from .io import check_limit_update, check_numeric, round_digits, sample_random_numbers
 from .io import set_limits, set_lower_limit, set_mean_value, set_n_random, set_sigma_low
-from .io import set_sigma_up, set_upper_limit, update_limits
+from .io import set_sigma_up, set_upper_limit
 
 class Unc:
     """Class for a quantity with asymmetric uncertainty
@@ -207,8 +207,27 @@ given in initialization. Setting n_random to len(random_values)" %
     def sample_random_numbers(self):
         """Sample random numbers from the distribution of Unc
 
-        Using the mean value, the shortest coverage interval and the limits, sample random \
-numbers and store them in the random_values member variable.
+        Update the random numbers stored by the Unc object.
+        What this function actually does depends on the content of self.random_values:
+
+        1) If self.random_values is an array of length 1, which is also its default \
+value, random numbers will be sampled from the given mean value and standard deviation \
+within the given limits according to an asymmetric normal distribution.
+        2) If the array self.random_values has more than a single element, the random \
+numbers will be sampled from the existing 'distribution'. For this, a discrete approximation \
+of the CDF will be computed from the set of random values. The CDF will then be inverted and \
+applied to a set of self.n_random uniformly distributed random values to yield new numbers \
+which are approximately distributed according to the original PDF.
+
+        Any call of sample_random_numbers() will update the variable self.random_numbers. \
+The number of randomly sampled values is given by self.n_random
+
+        Sometimes, for case 2), this function will be called in order to sample new random \
+values after the limits of the Unc number have been updated. If the limits are too strict, it \
+may not be possible to obtain a meaningful CDF from the remaining values. Therefore, this \
+function will issue a warning if less than 1% of the original number of random values remains, \
+or if the number of remaining random values falls below 1000. If less than two values remain, \
+an error will be thrown.
         """
 
         sample_random_numbers(self)
@@ -329,14 +348,6 @@ by the Particle Data Group (PDG)
 
         round_digits(self)
 
-    def update_limits(self):
-        """ If the limits for the distribution of Unc are changed, adapt mean_value, \
-sigma_low and sigma_up accordingly using the same Monte Carlo method that is \
-used for all calculations
-        """
-
-        update_limits(self)
-
     def __repr__(self):
         repr_string = ("Unc( mean_value=" + str(self.rounded[0]) + ", sigma_low=" +
                        str(self.rounded[1]) + ", sigma_up=" + str(self.rounded[2]))
@@ -356,31 +367,6 @@ used for all calculations
     ###################################################
     # Evaluation of results
     ###################################################
-
-    def eval(self, rand_result, force_inside_shortest_coverage=True):
-        """Evaluate the most probable value (or the mean value) and the shortest coverage interval \
-of randomly sampled values.
-
-        Parameters
-        ----------
-        rand_result : ndarray
-            Array of random numbers
-        force_inside_shortest_coverage : bool, optional
-            Force the most probable value to be inside the shortest coverage interval
-
-        Return
-        ------
-        result : Unc
-        """
-
-        eval_result = evaluate(rand_result=rand_result,
-                               force_inside_shortest_coverage=force_inside_shortest_coverage)
-
-        if self.store:
-            return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2],
-                       store=self.store, random_values=eval_result[1], n_random=self.n_random)
-        return Unc(eval_result[0][0], eval_result[0][1], eval_result[0][2],
-                   n_random=self.n_random)
 
     @classmethod
     def is_unc(cls, other):
@@ -568,8 +554,8 @@ of randomly sampled values.
 
         check_numeric(self, other)
 
-        rtruediv_result, store_rand_result = truediv(Unc(other, 0., 0., n_random=self.n_random,
-                                                         store=self.store), self)
+        rtruediv_result, store_rand_result = truediv(Unc(other, 0., 0.), self)
+
 
         return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
                    random_values=rtruediv_result[1] if store_rand_result else array([0.]),
