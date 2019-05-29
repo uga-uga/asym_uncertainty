@@ -117,7 +117,7 @@ Must be larger than 1 to be able to apply statistical methods on the set of rand
     # Count the number of instances of Unc
     n_instances = 0
 
-    def __init__(self, mean_value, sigma_low, sigma_up, limits=None, store=False,
+    def __init__(self, mean_value=1., sigma_low=None, sigma_up=None, limits=None, store=False,
                  random_values=array([0.]), n_random=None):
         """Initialization of members of Unc
 
@@ -137,13 +137,32 @@ that can be set with __init__().
         try:
             self.mean_value = mean_value
 
-            if sigma_low < 0.:
-                raise ValueError("sigma_low must be >= 0.")
-            if sigma_up < 0.:
-                raise ValueError("sigma_up must be >= 0.")
-            self.sigma_low = sigma_low
-            self.sigma_up = sigma_up
-            self.is_exact = bool(sigma_low == 0. and sigma_up == 0.)
+            if None in (sigma_low, sigma_up):
+                if sigma_low is None:
+                    if sigma_up is None:
+                        self.sigma_low = self.sigma_up = 0.
+                    else:
+                        if sigma_up < 0.:
+                            raise ValueError("sigma_up must be >= 0.")
+                        self.sigma_up = sigma_up
+                        self.sigma_low = self.sigma_up
+                else:
+                    if sigma_low < 0.:
+                        raise ValueError("sigma_low must be >= 0.")
+                    self.sigma_low = sigma_low
+
+                if sigma_up is None:
+                    self.sigma_up = self.sigma_low
+
+            else:
+                if sigma_low < 0.:
+                    raise ValueError("sigma_low must be >= 0.")
+                if sigma_up < 0.:
+                    raise ValueError("sigma_up must be >= 0.")
+                self.sigma_low = sigma_low
+                self.sigma_up = sigma_up
+            
+            self.is_exact = bool(self.sigma_low == 0. and self.sigma_up == 0.)
 
             if limits is None:
                 self.limits = [-inf, inf]

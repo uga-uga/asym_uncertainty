@@ -25,6 +25,61 @@ STATISTICAL_UNCERTAINTY_LIMIT = 0.25 # Maximum tolerated absolute deviation from
 class TestIO(object):
     def test_Unc_input(self):
 
+        # Test zero, one, two and three-parameter input
+        a = Unc()
+        assert a.mean_value == 1.
+        assert a.sigma_low == 0.
+        assert a.sigma_up == 0.
+        assert a.is_exact
+
+        a = Unc(2.)
+        assert a.mean_value == 2.
+        assert a.sigma_low == 0.
+        assert a.sigma_up == 0.
+        assert a.is_exact
+
+        with pytest.raises(ValueError):
+            a = Unc(2., -0.5, 0.5)
+        with pytest.raises(ValueError):
+            a = Unc(2., 0.5, -0.5)
+        with pytest.raises(ValueError):
+            a = Unc(sigma_low=-0.5)
+        with pytest.raises(ValueError):
+            a = Unc(sigma_up=-0.5)
+
+        a = Unc(2., 0.5)
+        assert a.mean_value == 2.
+        assert a.sigma_low == 0.5
+        assert a.sigma_up == 0.5
+
+        a = Unc(2., 0.5, 0.3)
+        assert a.mean_value == 2.
+        assert a.sigma_low == 0.5
+        assert a.sigma_up == 0.3
+
+        a = Unc(sigma_up = 0.3)
+        assert a.mean_value == 1.
+        assert a.sigma_low == 0.3
+        assert a.sigma_up == 0.3
+
+        a = Unc(sigma_low = 0.3)
+        assert a.mean_value == 1.
+        assert a.sigma_low == 0.3
+        assert a.sigma_up == 0.3
+
+        a = Unc(2., sigma_up = 0.3)
+        assert a.mean_value == 2.
+        assert a.sigma_low == 0.3
+        assert a.sigma_up == 0.3
+
+        with pytest.warns(UserWarning):
+            a = Unc(random_values=uniform(13., 14., 10**5))
+        assert 13. < a.mean_value < 14.
+        assert 0. < a.sigma_low < 1.
+        assert 0. < a.sigma_up < 1.
+
+        # Test three-parameter initialization
+        # This may be redundant with the tests above, because they were added afterwards
         a = Unc(1., 0., 0.)
         b = Unc(1., 1., 0.)
         assert a.is_exact
