@@ -157,12 +157,21 @@ class TestExactAlgebra(object):
         assert mult.sigma_low == 1.
         assert mult.sigma_up == 1.
 
-        # Test __rtruediv__() which determine Unc/float or Unc/int
+        # Test __rtruediv__() which determines Unc/float or Unc/int
         ratio = a/1.
 
         assert ratio.mean_value == 1.
         assert ratio.sigma_low== 1.
         assert ratio.sigma_up == 1.
+
+        # Test __pow__() which determines Unc**float or Unc**int
+        a = Unc(2., 0., 0.)
+        power = a**2
+
+        assert power.mean_value == 4.
+        assert power.sigma_low == 0.
+        assert power.sigma_up == 0.
+        assert power.is_exact
 
     def test_store_persistence(self):
         # Check that calculations including integers or floats preserve the Unc.store property

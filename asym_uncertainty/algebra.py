@@ -145,6 +145,11 @@ def power(self, other):
         store_rand_result = True
 
     if isinstance(other, (int, float)):
+        if self.is_exact:
+            return [([self.mean_value**other, 0., 0.],
+                     array([self.mean_value**other])),
+                    store_rand_result]
+
         if self.store:
             rand_self = self.random_values
         else:
