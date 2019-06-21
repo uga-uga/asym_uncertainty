@@ -22,7 +22,7 @@ from math import inf
 
 from numpy import array
 
-from mc_statistics import check_num_array_argument
+from .mc_statistics import check_num_array_argument
 
 from .algebra import add, mul, power, rpower, sub, truediv
 from .evaluation import evaluate

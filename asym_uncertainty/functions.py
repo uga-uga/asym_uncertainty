@@ -20,7 +20,7 @@ from numpy import array
 from numpy import exp as nexp
 
 from asym_uncertainty import evaluate, Unc
-from mc_statistics import randn_asym
+from .mc_statistics import randn_asym
 
 def exp(unc):
     """ Calculate exp(u)

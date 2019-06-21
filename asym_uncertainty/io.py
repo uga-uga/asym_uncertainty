@@ -9,7 +9,7 @@ from numpy.random import uniform
 
 from scipy.interpolate import interp1d
 
-from mc_statistics import cdf, check_num_array_argument, randn_asym
+from .mc_statistics import cdf, check_num_array_argument, randn_asym
 
 from .evaluation import evaluate
 

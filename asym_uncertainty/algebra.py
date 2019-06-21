@@ -19,7 +19,7 @@ import warnings
 
 from numpy import array
 
-from mc_statistics import randn_asym
+from .mc_statistics import randn_asym
 
 from .evaluation import evaluate
 from .io import check_numeric

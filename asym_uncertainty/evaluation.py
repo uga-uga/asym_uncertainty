@@ -18,7 +18,7 @@ values from a distribution"""
 
 from numpy import argmax, extract, histogram
 
-from mc_statistics import cdf, shortest_coverage
+from .mc_statistics import cdf, shortest_coverage
 
 def evaluate(rand_result, force_inside_shortest_coverage=True):
     """Implementation of Unc.eval()"""
