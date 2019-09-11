@@ -205,11 +205,12 @@ given in initialization. Setting n_random to len(random_values)" %
             self.set_n_random(len(random_values))
 
             # Re-evaluate mean_value of sigma_low/sigma_up, if a set of random numbers is
-            # given instead of those three characteristics.
-            eval_result = evaluate(random_values, force_inside_shortest_coverage=True)
-            self.set_mean_value(eval_result[0][0])
-            self.set_sigma_low(eval_result[0][1])
-            self.set_sigma_up(eval_result[0][2])
+            # given instead of those three characteristics and if store is False.
+            if store:
+                eval_result = evaluate(random_values, force_inside_shortest_coverage=True)
+                self.set_mean_value(eval_result[0][0])
+                self.set_sigma_low(eval_result[0][1])
+                self.set_sigma_up(eval_result[0][2])
         # If no random values are given to the constructor, initialize
         # n_random with its default value and execute the usual procedure of setting
         # n_random.
@@ -574,7 +575,6 @@ by the Particle Data Group (PDG)
         check_numeric(self, other)
 
         rtruediv_result, store_rand_result = truediv(Unc(other, 0., 0.), self)
-
 
         return Unc(rtruediv_result[0][0], rtruediv_result[0][1], rtruediv_result[0][2],
                    random_values=rtruediv_result[1] if store_rand_result else array([0.]),

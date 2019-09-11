@@ -74,9 +74,9 @@ class TestIO(object):
 
         with pytest.warns(UserWarning):
             a = Unc(random_values=uniform(13., 14., 10**5))
-        assert 13. < a.mean_value < 14.
-        assert 0. < a.sigma_low < 1.
-        assert 0. < a.sigma_up < 1.
+        assert a.mean_value == 1.
+        assert a.sigma_low == 0.
+        assert a.sigma_up == 0.
 
         # Test three-parameter initialization
         # This may be redundant with the tests above, because they were added afterwards

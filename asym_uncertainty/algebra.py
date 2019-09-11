@@ -18,6 +18,7 @@
 import warnings
 
 from numpy import array
+from numpy import abs as nabs
 
 from .mc_statistics import randn_asym
 
@@ -100,19 +101,19 @@ def mul(self, other):
         store_rand_result = True
 
     if isinstance(other, (int, float)):
-        return [([self.mean_value*other, self.sigma_low*other, self.sigma_up*other],
+        return [([self.mean_value*other, self.sigma_low*nabs(other), self.sigma_up*nabs(other)],
                  self.random_values*other), store_rand_result]
 
     if other.store:
         store_rand_result = True
 
     if other.is_exact:
-        return [([self.mean_value*other.mean_value, self.sigma_low*other.mean_value,
-                  self.sigma_up*other.mean_value], self.random_values*other.mean_value),
+        return [([self.mean_value*other.mean_value, self.sigma_low*nabs(other.mean_value),
+                  self.sigma_up*nabs(other.mean_value)], self.random_values*other.mean_value),
                 store_rand_result]
     if self.is_exact:
-        return [([self.mean_value*other.mean_value, other.sigma_low*self.mean_value,
-                  other.sigma_up*self.mean_value], self.mean_value*other.random_values),
+        return [([self.mean_value*other.mean_value, other.sigma_low*nabs(self.mean_value),
+                  other.sigma_up*nabs(self.mean_value)], self.mean_value*other.random_values),
                 store_rand_result]
 
 
@@ -282,7 +283,7 @@ def truediv(self, other):
         store_rand_result = True
 
     if isinstance(other, (int, float)):
-        return [([self.mean_value/other, self.sigma_low/other, self.sigma_up/other],
+        return [([self.mean_value/other, self.sigma_low/nabs(other), self.sigma_up/nabs(other)],
                  self.random_values/other),
                 store_rand_result]
 
@@ -290,8 +291,8 @@ def truediv(self, other):
         return [([1., 0., 0.], array([1.])), store_rand_result]
 
     if other.is_exact:
-        return [([self.mean_value/other.mean_value, self.sigma_low/other.mean_value,
-                  self.sigma_up/other.mean_value], self.random_values/other.mean_value),
+        return [([self.mean_value/nabs(other.mean_value), self.sigma_low/nabs(other.mean_value),
+                  self.sigma_up/nabs(other.mean_value)], self.random_values/other.mean_value),
                 store_rand_result]
 
     if other.store:

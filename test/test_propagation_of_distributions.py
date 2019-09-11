@@ -88,7 +88,10 @@ class TestPropagation(object):
     def test_division(self):
         # Test without storage of random values
         with pytest.warns(UserWarning):
-            a = Unc(1., 0.5, 0.5, random_values=array([1., 2., 4.]))
+            a = Unc(5., 0.5, 0.5, random_values=array([1., 2., 4.]))
+        assert a.mean_value==5.
+        assert a.sigma_low==0.5
+        assert a.sigma_up==0.5
         b = 1./a
         assert len(b.random_values) == 1
 

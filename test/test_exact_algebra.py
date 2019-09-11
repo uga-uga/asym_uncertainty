@@ -157,12 +157,25 @@ class TestExactAlgebra(object):
         assert mult.sigma_low == 1.
         assert mult.sigma_up == 1.
 
+        a = Unc(1., 1., 1.)
+        mult = -2.*a
+
+        assert mult.mean_value == -2.
+        assert mult.sigma_low == 2.
+        assert mult.sigma_up == 2.
+
         # Test __rtruediv__() which determines Unc/float or Unc/int
         ratio = a/1.
 
         assert ratio.mean_value == 1.
         assert ratio.sigma_low== 1.
         assert ratio.sigma_up == 1.
+
+        ratio = a/(-2.)
+
+        assert ratio.mean_value == -0.5
+        assert ratio.sigma_low== 0.5
+        assert ratio.sigma_up == 0.5
 
         # Test __pow__() which determines Unc**float or Unc**int
         a = Unc(2., 0., 0.)
