@@ -28,9 +28,12 @@ def evaluate(rand_result, force_inside_shortest_coverage=True):
         hist, bins = histogram(
             extract((rand_result >= s_cov[0])*(rand_result <= s_cov[1]), rand_result),
             bins="sqrt")
+# In the context of asym_uncertainty, this case will never occur.
+# However, it was decided to leave the 'else' statement here as a reminder that
+# the force_inside_shortest_coverage option is set.
 #    else:
 #        hist, bins = histogram(rand_result, bins="sqrt")
 
-    most_probable = bins[argmax(hist)]
+    most_probable = bins[argmax(hist)]+0.5*(bins[1]-bins[0])
 
     return ([most_probable, most_probable - s_cov[0], s_cov[1] - most_probable], rand_result)
