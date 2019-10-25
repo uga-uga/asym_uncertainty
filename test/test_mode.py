@@ -16,7 +16,6 @@
 import pytest
 
 from asym_uncertainty import Unc, evaluate
-#from nump import abs
 
 def test_mode():
 
@@ -27,9 +26,3 @@ def test_mode():
     mode_kde = evaluate(data.random_values,use_kde=True)[0][0]
 
     assert -0.1 <= mode_kde <= 0.1
-
-    #test whether use of KDE improves the result
-    
-    mode_nokde = evaluate(data.random_values,use_kde=False)[0][0]
-
-    assert abs(mode_kde) < abs(mode_nokde)
