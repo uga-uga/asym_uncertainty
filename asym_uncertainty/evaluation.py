@@ -39,10 +39,10 @@ def evaluate(rand_result, force_inside_shortest_coverage=True, use_kde=True):
 
             plain_kde   = gaussian_kde(data_inside)
             inv_kde     = lambda x: (-1)*plain_kde.evaluate(x)
-            min_kde     = minimize_scalar(inv_kde,bounds=((s_cov[0],s_cov[1]),))
+            min_kde     = minimize_scalar(inv_kde,bounds=((s_cov[0],s_cov[1])), method='bounded')
 
             if min_kde.success:
-                most_probable  = min_kde.x[0]   
+                most_probable = min_kde.x[0]
             else:
                 warnings.warn('Minimization of KDE failed due to %s. Use histogram-generated mode instead.'% min_kde.message,
                     UserWarning)
