@@ -42,7 +42,11 @@ def evaluate(rand_result, force_inside_shortest_coverage=True, use_kde=True):
             min_kde     = minimize_scalar(inv_kde,bounds=((s_cov[0],s_cov[1])), method='bounded')
 
             if min_kde.success:
-                most_probable = min_kde.x[0]
+                if isinstance(min_kde.x,(int,float)):
+                    most_probable = min_kde.x
+                else:
+                    most_probable = min_kde.x[0]
+	
             else:
                 warnings.warn('Minimization of KDE failed due to %s. Use histogram-generated mode instead.'% min_kde.message,
                     UserWarning)
