@@ -31,7 +31,7 @@ class TestPropagation(object):
             div = a/b
             power = a**b
 
-        assert len(record) == 5
+        assert len(record) == 17
         assert "mismatch" in record[0].message.args[0]
 
         assert len(add.random_values) == 3

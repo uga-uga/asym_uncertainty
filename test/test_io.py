@@ -190,7 +190,7 @@ class TestIO(object):
         assert len(a.random_values) == 50
         with pytest.warns(UserWarning) as record:
             a.set_n_random(100)
-        assert len(record) == 2
+        assert len(record) == 3
         assert "Requested n_random" in record[0].message.args[0]
         assert "less than 1000 values" in record[1].message.args[0]
         assert len(a.random_values) == 100
@@ -211,7 +211,7 @@ class TestIO(object):
         assert len(a.random_values) == int(1e6)
         with pytest.warns(RuntimeWarning) as record:
             a.set_limits([0., 0.001])
-        assert len(record) == 2
+        assert len(record) == 4
         assert "less than 1000 values" in record[0].message.args[0]
         assert "less than 1 percent" in record[1].message.args[0]
         assert len(a.random_values) == int(1e6)

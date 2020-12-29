@@ -69,7 +69,7 @@ def round_digits(self):
     # determines the digits of the rounded values.
     arr_sort = sort(arr)
     nonzero = extract(arr_sort > 0., arr_sort)
-    if len(nonzero) is not 0:
+    if len(nonzero) != 0:
         if self.sigma_low == self.sigma_up == 0.:
             arr_round = [self.mean_value, 0., 0.]
 
